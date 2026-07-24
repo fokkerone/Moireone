@@ -9,13 +9,12 @@ export interface LayerParams {
   color: string;
   baseAngle: number;
   noiseScale: number;
-  noiseStrength: number;
+  amplitude: number;
   spacing: number;
   weight: number;
   alpha: number;
   seed: number;
   zoom: number;
-  turnRate: number;
 }
 
 export interface PatternState {

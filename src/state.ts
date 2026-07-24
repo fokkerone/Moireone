@@ -8,14 +8,13 @@ export function createDefaultLayer(index: number): LayerParams {
   return {
     color: getDefaultLayerColor(index),
     baseAngle: (index * 25) % 360,
-    noiseScale: 0.0018,
-    noiseStrength: 70,
+    noiseScale: 0.0004,
+    amplitude: 200,
     spacing: 14,
     weight: 1.5,
     alpha: 0.6,
     seed: index * 100,
     zoom: 1,
-    turnRate: 20,
   };
 }
 

@@ -1,20 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { generateLayerLines } from './lineGenerator';
-import type { LayerParams, NoiseFn, Point } from './types';
-
-const MAX_STEPS = 2000;
+import type { LayerParams, NoiseFn } from './types';
 
 const straightLayer: LayerParams = {
   color: '#00ff00',
   baseAngle: 0,
   noiseScale: 0.01,
-  noiseStrength: 0,
+  amplitude: 0,
   spacing: 20,
   weight: 1,
   alpha: 1,
   seed: 0,
   zoom: 1,
-  turnRate: 1000,
 };
 
 const neutralNoise: NoiseFn = () => 0.5;
@@ -23,6 +20,16 @@ describe('generateLayerLines', () => {
   it('produces at least one line covering a 200x200 canvas', () => {
     const lines = generateLayerLines(straightLayer, 200, 200, neutralNoise);
     expect(lines.length).toBeGreaterThan(0);
+  });
+
+  it('produces a perfectly straight horizontal line when amplitude is 0', () => {
+    const lines = generateLayerLines(straightLayer, 200, 200, neutralNoise);
+    const straightLine = lines.find((line) => {
+      const firstY = line[0].y;
+      return line.every((p) => Math.abs(p.y - firstY) < 1e-9);
+    });
+    expect(straightLine).toBeDefined();
+    expect(straightLine!.length).toBeGreaterThan(1);
   });
 
   it('keeps every point of every line within the canvas bounds', () => {
@@ -51,20 +58,19 @@ describe('generateLayerLines', () => {
       color: '#ff00ff',
       baseAngle: 0,
       noiseScale: 0.01,
-      noiseStrength: 15,
+      amplitude: 50,
       spacing: 40,
       weight: 1,
       alpha: 1,
       seed: 0,
       zoom: 1,
-      turnRate: 1000,
     };
 
-    // Deterministic, non-constant noise: the path genuinely curves (it is
-    // NOT a constant deviation), so if lines were still sampling the field
-    // independently at their own (x, y) they would drift apart or converge
-    // instead of staying rigidly parallel.
-    const curvingNoise: NoiseFn = (x) => 0.5 + 0.3 * Math.sin(x);
+    // Deterministic, non-constant noise: the displacement genuinely varies
+    // with position (it is NOT a constant offset), so if lines were
+    // independently sampling the field at their own (x, y) they would
+    // drift apart or converge instead of staying rigidly parallel.
+    const curvingNoise: NoiseFn = (x) => 0.5 + 0.3 * Math.sin(x * 0.01);
 
     const lines = generateLayerLines(curvingLayer, width, height, curvingNoise);
 
@@ -110,300 +116,94 @@ describe('generateLayerLines', () => {
     expect(Math.abs(firstDx)).toBeLessThan(1e-6);
 
     // The constant vertical separation must be a whole-number multiple of
-    // the layer's spacing (since every start point is offset by i * spacing
-    // along the perpendicular direction).
+    // the layer's spacing (since every line's points are the shared base
+    // point plus (sharedDisplacement + i * spacing) along the perpendicular).
     const spacingMultiple = firstDy / curvingLayer.spacing;
     expect(Math.abs(spacingMultiple - Math.round(spacingMultiple))).toBeLessThan(1e-6);
     expect(Math.round(spacingMultiple)).not.toBe(0);
   });
 
-  it('stays exactly parallel at the widened slider extremes (noiseScale 0.0002, noiseStrength 360)', () => {
-    const width = 400;
-    const height = 400;
-
-    const extremeLayer: LayerParams = {
-      color: '#ff8800',
-      baseAngle: 0,
-      noiseScale: 0.0002,
-      noiseStrength: 360,
-      spacing: 40,
-      weight: 1,
-      alpha: 1,
-      seed: 0,
-      zoom: 1,
-      turnRate: 1000,
-    };
-
-    // Deterministic, non-constant noise: the path genuinely curves (it is
-    // NOT a constant deviation), so if lines were still sampling the field
-    // independently at their own (x, y) they would drift apart or converge
-    // instead of staying rigidly parallel. This mirrors the existing
-    // noiseStrength: 15 parallelism test above, but re-run at the new
-    // widened slider extremes (very smooth/slow-varying noiseScale and the
-    // new maximum noiseStrength) to confirm the structural guarantee -- the
-    // shared-spine translate does not special-case parameter magnitude --
-    // still holds there.
-    const curvingNoise: NoiseFn = (x) => 0.5 + 0.3 * Math.sin(x);
-
-    const lines = generateLayerLines(extremeLayer, width, height, curvingNoise);
-
-    // Group lines by point-count. With baseAngle 0 the perpendicular offset
-    // between parallel lines is purely vertical, so every line shares the
-    // exact same x-trajectory (only its constant y-offset differs). Lines
-    // whose y stays within the canvas for the whole transit will therefore
-    // all have identical length (same entry/exit step indices).
-    const byLength = new Map<number, (typeof lines)[number][]>();
-    for (const line of lines) {
-      const group = byLength.get(line.length) ?? [];
-      group.push(line);
-      byLength.set(line.length, group);
-    }
-
-    let chosenPair: [(typeof lines)[number], (typeof lines)[number]] | undefined;
-    for (const [length, group] of byLength) {
-      if (length > 50 && group.length >= 2) {
-        chosenPair = [group[0], group[1]];
-        break;
-      }
-    }
-
-    expect(chosenPair).toBeDefined();
-    const [lineA, lineB] = chosenPair!;
-    expect(lineA.length).toBe(lineB.length);
-    expect(lineA.length).toBeGreaterThan(50);
-
-    const EPSILON = 1e-9;
-    const firstDx = lineB[0].x - lineA[0].x;
-    const firstDy = lineB[0].y - lineA[0].y;
-
-    for (let k = 0; k < lineA.length; k++) {
-      const dx = lineB[k].x - lineA[k].x;
-      const dy = lineB[k].y - lineA[k].y;
-      expect(Math.abs(dx - firstDx)).toBeLessThan(EPSILON);
-      expect(Math.abs(dy - firstDy)).toBeLessThan(EPSILON);
-    }
-
-    // Because baseAngle is 0, the perpendicular direction is purely
-    // vertical: the constant separation vector must have (almost) no
-    // horizontal component.
-    expect(Math.abs(firstDx)).toBeLessThan(1e-6);
-
-    // The constant vertical separation must be a whole-number multiple of
-    // the layer's spacing (since every start point is offset by i * spacing
-    // along the perpendicular direction).
-    const spacingMultiple = firstDy / extremeLayer.spacing;
-    expect(Math.abs(spacingMultiple - Math.round(spacingMultiple))).toBeLessThan(1e-6);
-    expect(Math.round(spacingMultiple)).not.toBe(0);
-  });
-
-  it('resumes as a NEW segment when the spine exits the canvas and later re-enters', () => {
-    const width = 400;
+  it('resumes as a NEW segment when a line exits the canvas and later re-enters', () => {
+    // Wide canvas so the natural x-exit (baseX > width) happens well after
+    // our engineered y-excursion, giving room to observe a genuine
+    // exit-then-re-entry rather than the line just ending.
+    const width = 1000;
     const height = 200;
 
     const bounceLayer: LayerParams = {
       color: '#0000ff',
       baseAngle: 0,
-      noiseScale: 0.01,
-      noiseStrength: 90,
+      // noiseScale 1 / zoom 1 => effective scale is 1, so the noise
+      // function receives the RAW base-point x coordinate unmodified,
+      // letting us key deterministic phases directly off it.
+      noiseScale: 1,
+      amplitude: 150,
       spacing: 40,
       weight: 1,
       alpha: 1,
       seed: 0,
       zoom: 1,
-      turnRate: 1000,
     };
 
-    // Deterministic noise keyed on the STEP INDEX via a closure counter --
-    // NOT on x/y or on which line is being traced. In the spine-based
-    // implementation the noise function is only ever sampled once per step,
-    // along the single shared spine trace, so per-line-call semantics no
-    // longer make sense here.
-    //
-    // Phase A (steps 0-89):    deviation 0   -> straight travel, carries the
-    //                          spine from its off-canvas start into the
-    //                          canvas along +x.
-    // Phase B (steps 90-129):  deviation +90 -> the spine dives straight
-    //                          down (dx=0, dy=+STEP), driving y out past
-    //                          the bottom of the canvas (height=200).
-    // Phase C (steps 130-169): deviation -90 -> the spine climbs back up
-    //                          (dx=0, dy=-STEP), bringing y back inside.
-    // Phase D (steps 170+):    deviation 0   -> straight travel resumes
-    //                          until the spine eventually exits through
-    //                          x > width.
-    let step = -1;
-    const bouncingNoise: NoiseFn = () => {
-      step++;
-      if (step >= 90 && step < 130) return 1; // full +deviation -> angle +90
-      if (step >= 130 && step < 170) return 0; // full -deviation -> angle -90
-      return 0.5; // no deviation -> straight travel along baseAngle
+    // Deterministic noise keyed on the base point's x coordinate (which is
+    // a pure function of position in this model, unlike the old per-step
+    // heading-integration model):
+    //   x < 300        -> neutral (0.5): displacement 0, line in-bounds
+    //   300 <= x < 500 -> full positive (1): displacement +150, y = 250,
+    //                     which is outside height=200 -> line exits
+    //   x >= 500       -> neutral (0.5) again: displacement 0, line
+    //                     re-enters at y = 100
+    const bouncingNoise: NoiseFn = (x) => {
+      if (x < 300) return 0.5;
+      if (x < 500) return 1;
+      return 0.5;
     };
 
     const lines = generateLayerLines(bounceLayer, width, height, bouncingNoise);
 
     // Independently computed (pure arithmetic, not re-deriving the
-    // production algorithm) expected geometry of the center line (offset 0,
-    // which reproduces the spine's own trajectory exactly):
+    // production algorithm) geometry of the center line (offset 0, i.e. the
+    // undisplaced travel line itself, whose y sits at exactly height/2 = 100
+    // whenever displacement is 0):
     const diagonal = Math.sqrt(width * width + height * height);
-    const spineStartX = width / 2 - diagonal;
-    const EPSILON = 1e-6;
+    const startX = width / 2 - diagonal;
+    const STEP_LENGTH = 4;
 
-    // Segment 1: accumulates while the spine travels straight in from
-    // off-canvas (k=62, first in-bounds step) until y hits exactly 200 at
-    // k=115 (last in-bounds step before the dive pushes y out of range).
-    const seg1FirstX = spineStartX + 4 * 62;
-    const seg1FirstY = 100;
-    const seg1LastX = spineStartX + 4 * 90; // x froze once the dive began
-    const seg1LastY = 200;
-    const seg1ExpectedLength = 115 - 62 + 1;
-
-    // Segment 2: resumes once the climb-back-up brings y down to exactly
-    // 200 again at k=145 (same x as segment 1's last point -- the spine
-    // revisits the very same point in space after a real gap of steps
-    // 116-144 spent outside the canvas), and runs until x exceeds 400 at
-    // k=241.
-    const seg2FirstX = seg1LastX;
-    const seg2FirstY = 200;
-    const seg2LastX = spineStartX + 4 * 90 + 4 * (241 - 170);
-    const seg2LastY = 100;
-    const seg2ExpectedLength = 241 - 145 + 1;
-
-    function closeTo(a: number, b: number): boolean {
-      return Math.abs(a - b) < EPSILON;
-    }
-
-    const segment1 = lines.find(
-      (line) =>
-        line.length === seg1ExpectedLength &&
-        closeTo(line[0].x, seg1FirstX) &&
-        closeTo(line[0].y, seg1FirstY) &&
-        closeTo(line[line.length - 1].x, seg1LastX) &&
-        closeTo(line[line.length - 1].y, seg1LastY)
+    // Only the center line (perpendicular offset 0) sits at y === 100
+    // during its neutral phases; every other parallel line sits at
+    // 100 + i * spacing !== 100, so filtering for "all points at y ~ 100"
+    // isolates exactly the center line's segments.
+    const centerSegments = lines.filter((line) =>
+      line.every((p) => Math.abs(p.y - 100) < 1e-6)
     );
 
-    const segment2 = lines.find(
-      (line) =>
-        line.length === seg2ExpectedLength &&
-        closeTo(line[0].x, seg2FirstX) &&
-        closeTo(line[0].y, seg2FirstY) &&
-        closeTo(line[line.length - 1].x, seg2LastX) &&
-        closeTo(line[line.length - 1].y, seg2LastY)
-    );
+    expect(centerSegments.length).toBeGreaterThanOrEqual(2);
 
-    // Both halves of the bounce must be present as SEPARATE segments...
-    expect(segment1).toBeDefined();
-    expect(segment2).toBeDefined();
-    expect(segment1).not.toBe(segment2);
+    // Sort by x so we can identify the "before the dip" and "after the dip"
+    // segments unambiguously.
+    const sorted = [...centerSegments].sort((a, b) => a[0].x - b[0].x);
+    const segment1 = sorted[0];
+    const segment2 = sorted[1];
 
-    // ...and they must be genuinely non-contiguous: segment1's last point
-    // and segment2's first point sit at the exact same (x, y) -- the spine
-    // physically revisits that location -- but the two are recorded as
-    // distinct arrays with a real gap of off-canvas steps in between
-    // (k=116..144, while y ranged from 204 up to 260 and back down to 204).
-    // If the old truncate-on-exit behavior had regressed into "just stop
-    // and never resume", segment2 would not exist at all; if resumption
-    // wrongly continued the same array instead of starting fresh, there
-    // would be only one long segment instead of two.
-    expect(segment1![segment1!.length - 1].x).toBeCloseTo(segment2![0].x, 6);
-    expect(segment1![segment1!.length - 1].y).toBeCloseTo(segment2![0].y, 6);
-  });
+    // Step index where baseX first reaches 300 / first reaches 500.
+    const stepAt300 = Math.ceil((300 - startX) / STEP_LENGTH);
+    const stepAt500 = Math.ceil((500 - startX) / STEP_LENGTH);
 
-  it('samples the noise field exactly MAX_STEPS times total, regardless of line count', () => {
-    let callCount = 0;
-    const spyNoise: NoiseFn = () => {
-      callCount++;
-      return 0.5;
-    };
+    const seg1LastX = startX + STEP_LENGTH * (stepAt300 - 1);
+    const seg2FirstX = startX + STEP_LENGTH * stepAt500;
 
-    // A small spacing produces many parallel lines (far more than one
-    // sample-per-line-per-step would allow us to ignore); the noise field
-    // must still only be sampled once, along the single reference spine.
-    generateLayerLines({ ...straightLayer, spacing: 2 }, 200, 200, spyNoise);
+    expect(segment1[segment1.length - 1].x).toBeCloseTo(seg1LastX, 6);
+    expect(segment2[0].x).toBeCloseTo(seg2FirstX, 6);
 
-    expect(callCount).toBe(MAX_STEPS);
-  });
+    // Prove a REAL gap exists between the two segments -- not adjacent
+    // steps -- i.e. the line genuinely left the canvas for a stretch of
+    // steps rather than this being one contiguous walk that happens to be
+    // split into two arrays.
+    const gap = segment2[0].x - segment1[segment1.length - 1].x;
+    expect(gap).toBeGreaterThan(STEP_LENGTH * 2);
 
-  it('turnRate clamps the per-step heading change and genuinely changes the output geometry', () => {
-    const width = 2000;
-    const height = 2000;
-
-    const turnLayer: LayerParams = {
-      color: '#123456',
-      baseAngle: 0,
-      noiseScale: 0.01,
-      noiseStrength: 30,
-      spacing: 1000,
-      weight: 1,
-      alpha: 1,
-      seed: 0,
-      zoom: 1,
-      turnRate: 2,
-    };
-
-    // Alternates the target deviation every single step between -30 and
-    // +30 degrees -- an instantaneous 60-degree target swing every step,
-    // similar in spirit to the bounceLayer's step-indexed noise above, but
-    // designed to prove the turnRate clamp rather than segment re-entry.
-    // Without heading inertia this would translate directly into an
-    // equally abrupt, jagged heading change every step.
-    function makeAlternatingNoise(): NoiseFn {
-      let toggle = 0;
-      return () => {
-        toggle = 1 - toggle;
-        return toggle;
-      };
-    }
-
-    function directionDegrees(a: Point, b: Point): number {
-      return (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
-    }
-
-    function angularDiff(a: number, b: number): number {
-      let diff = b - a;
-      while (diff > 180) diff -= 360;
-      while (diff < -180) diff += 360;
-      return diff;
-    }
-
-    function longestLine(lines: Point[][]): Point[] {
-      return lines.reduce((longest, l) => (l.length > longest.length ? l : longest));
-    }
-
-    // Small turnRate: heading must never change by more than turnRate
-    // degrees between consecutive steps.
-    const smallTurnLines = generateLayerLines(turnLayer, width, height, makeAlternatingNoise());
-    const centerSmall = longestLine(smallTurnLines);
-    expect(centerSmall.length).toBeGreaterThan(50);
-
-    const EPSILON = 1e-6;
-    for (let k = 1; k < centerSmall.length - 1; k++) {
-      const dirA = directionDegrees(centerSmall[k - 1], centerSmall[k]);
-      const dirB = directionDegrees(centerSmall[k], centerSmall[k + 1]);
-      const diff = Math.abs(angularDiff(dirA, dirB));
-      expect(diff).toBeLessThanOrEqual(turnLayer.turnRate + EPSILON);
-    }
-
-    // Large turnRate: same noise function, only turnRate differs. This
-    // must produce a visibly different (more abrupt) trajectory, proving
-    // turnRate actually changes the generated geometry rather than being
-    // a no-op.
-    const largeTurnLines = generateLayerLines(
-      { ...turnLayer, turnRate: 1000 },
-      width,
-      height,
-      makeAlternatingNoise()
-    );
-    const centerLarge = longestLine(largeTurnLines);
-    expect(centerLarge.length).toBeGreaterThan(50);
-
-    const sampleCount = Math.min(centerSmall.length, centerLarge.length, 20);
-    let foundDivergence = false;
-    for (let k = 0; k < sampleCount; k++) {
-      const dy = Math.abs(centerSmall[k].y - centerLarge[k].y);
-      if (dy > 0.5) {
-        foundDivergence = true;
-        break;
-      }
-    }
-    expect(foundDivergence).toBe(true);
+    // And both segments must be real, non-degenerate line segments.
+    expect(segment1.length).toBeGreaterThan(1);
+    expect(segment2.length).toBeGreaterThan(1);
   });
 });

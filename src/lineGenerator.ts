@@ -1,8 +1,7 @@
 import type { LayerParams, NoiseFn, Point } from './types';
-import { fieldAngle } from './flowfield';
+import { lineOffset } from './flowfield';
 
 const STEP_LENGTH = 4;
-const MAX_STEPS = 2000;
 
 function toRadians(degrees: number): number {
   return (degrees * Math.PI) / 180;
@@ -12,71 +11,6 @@ function isInsideCanvas(point: Point, width: number, height: number): boolean {
   return point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height;
 }
 
-interface Vector {
-  dx: number;
-  dy: number;
-}
-
-function traceSpineMovements(
-  layer: LayerParams,
-  startX: number,
-  startY: number,
-  noise: NoiseFn
-): Vector[] {
-  const movements: Vector[] = [];
-  let x = startX;
-  let y = startY;
-  let heading = layer.baseAngle;
-
-  for (let step = 0; step < MAX_STEPS; step++) {
-    const target = fieldAngle(layer, x, y, noise);
-    const rawDelta = target - heading;
-    const clampedDelta = Math.max(-layer.turnRate, Math.min(layer.turnRate, rawDelta));
-    heading += clampedDelta;
-
-    const angle = toRadians(heading);
-    const dx = Math.cos(angle) * STEP_LENGTH;
-    const dy = Math.sin(angle) * STEP_LENGTH;
-    movements.push({ dx, dy });
-    x += dx;
-    y += dy;
-  }
-
-  return movements;
-}
-
-function traceLineFromMovements(
-  startX: number,
-  startY: number,
-  movements: Vector[],
-  width: number,
-  height: number
-): Point[][] {
-  const segments: Point[][] = [];
-  let currentSegment: Point[] = [];
-  let x = startX;
-  let y = startY;
-
-  for (const { dx, dy } of movements) {
-    if (isInsideCanvas({ x, y }, width, height)) {
-      currentSegment.push({ x, y });
-    } else if (currentSegment.length > 1) {
-      segments.push(currentSegment);
-      currentSegment = [];
-    } else {
-      currentSegment = [];
-    }
-    x += dx;
-    y += dy;
-  }
-
-  if (currentSegment.length > 1) {
-    segments.push(currentSegment);
-  }
-
-  return segments;
-}
-
 export function generateLayerLines(
   layer: LayerParams,
   width: number,
@@ -84,29 +18,67 @@ export function generateLayerLines(
   noise: NoiseFn
 ): Point[][] {
   const diagonal = Math.sqrt(width * width + height * height);
-  const perpendicularAngle = toRadians(layer.baseAngle + 90);
-  const perpX = Math.cos(perpendicularAngle);
-  const perpY = Math.sin(perpendicularAngle);
+
+  const travelAngle = toRadians(layer.baseAngle);
+  const travelX = Math.cos(travelAngle);
+  const travelY = Math.sin(travelAngle);
+
+  const perpAngle = toRadians(layer.baseAngle + 90);
+  const perpX = Math.cos(perpAngle);
+  const perpY = Math.sin(perpAngle);
+
   const centerX = width / 2;
   const centerY = height / 2;
-  const travelAngle = toRadians(layer.baseAngle);
-  const backX = -Math.cos(travelAngle);
-  const backY = -Math.sin(travelAngle);
 
-  const spineStartX = centerX + backX * diagonal;
-  const spineStartY = centerY + backY * diagonal;
-  const movements = traceSpineMovements(layer, spineStartX, spineStartY, noise);
+  // Start well behind the canvas along the travel axis, symmetric to the
+  // old spine-start construction, so every line spans the full canvas
+  // regardless of baseAngle.
+  const startX = centerX - travelX * diagonal;
+  const startY = centerY - travelY * diagonal;
 
-  const lines: Point[][] = [];
+  const numSteps = Math.ceil((2 * diagonal) / STEP_LENGTH);
+
+  // Precompute the base (undisplaced) travel-line point and the shared
+  // perpendicular displacement ONCE per step -- every parallel line reads
+  // from these same arrays, which is what guarantees exact parallelism.
+  const baseXs = new Array<number>(numSteps);
+  const baseYs = new Array<number>(numSteps);
+  const displacements = new Array<number>(numSteps);
+  for (let s = 0; s < numSteps; s++) {
+    const bx = startX + travelX * STEP_LENGTH * s;
+    const by = startY + travelY * STEP_LENGTH * s;
+    baseXs[s] = bx;
+    baseYs[s] = by;
+    displacements[s] = lineOffset(layer, bx, by, noise);
+  }
+
   const halfCount = Math.ceil(diagonal / layer.spacing / 2);
+  const lines: Point[][] = [];
 
   for (let i = -halfCount; i <= halfCount; i++) {
-    const offset = i * layer.spacing;
-    const startX = spineStartX + perpX * offset;
-    const startY = spineStartY + perpY * offset;
+    const constantOffset = i * layer.spacing;
+    let currentSegment: Point[] = [];
 
-    const segments = traceLineFromMovements(startX, startY, movements, width, height);
-    lines.push(...segments);
+    for (let s = 0; s < numSteps; s++) {
+      const totalOffset = displacements[s] + constantOffset;
+      const point: Point = {
+        x: baseXs[s] + perpX * totalOffset,
+        y: baseYs[s] + perpY * totalOffset,
+      };
+
+      if (isInsideCanvas(point, width, height)) {
+        currentSegment.push(point);
+      } else if (currentSegment.length > 1) {
+        lines.push(currentSegment);
+        currentSegment = [];
+      } else {
+        currentSegment = [];
+      }
+    }
+
+    if (currentSegment.length > 1) {
+      lines.push(currentSegment);
+    }
   }
 
   return lines;
