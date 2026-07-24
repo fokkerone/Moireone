@@ -51,9 +51,8 @@ export function LayerPanel({
         </div>
         <ParamSlider label="Winkel" min={0} max={360} step={1} value={layer.baseAngle} onChange={(v) => onUpdate({ baseAngle: v })} />
         <ParamSlider label="Noise-Scale" min={0.0002} max={0.05} step={0.0002} value={layer.noiseScale} onChange={(v) => onUpdate({ noiseScale: v })} />
-        <ParamSlider label="Noise-Stärke" min={0} max={360} step={1} value={layer.noiseStrength} onChange={(v) => onUpdate({ noiseStrength: v })} />
-        <ParamSlider label="Kurven-Trägheit" min={1} max={45} step={1} value={layer.turnRate} onChange={(v) => onUpdate({ turnRate: v })} />
-        <ParamSlider label="Zoom" min={1} max={20} step={1} value={layer.zoom} onChange={(v) => onUpdate({ zoom: v })} />
+        <ParamSlider label="Amplitude" min={0} max={500} step={5} value={layer.amplitude} onChange={(v) => onUpdate({ amplitude: v })} />
+        <ParamSlider label="Zoom" min={-50} max={50} step={1} value={layer.zoom} onChange={(v) => onUpdate({ zoom: v })} />
         <ParamSlider label="Deckkraft" min={0} max={1} step={0.01} value={layer.alpha} onChange={(v) => onUpdate({ alpha: v })} />
       </AccordionContent>
     </AccordionItem>
