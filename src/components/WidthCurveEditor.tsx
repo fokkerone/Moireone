@@ -84,7 +84,7 @@ export function WidthCurveEditor({ layer, onUpdate }: WidthCurveEditorProps) {
         className="touch-none rounded border border-neutral-600 bg-neutral-800"
         onPointerMove={handlePointerMove}
         onPointerUp={() => setDragging(null)}
-        onPointerLeave={() => setDragging(null)}
+        onLostPointerCapture={() => setDragging(null)}
       >
         <polyline points={points} fill="none" stroke="#ffffff" strokeWidth={2} />
         <circle
