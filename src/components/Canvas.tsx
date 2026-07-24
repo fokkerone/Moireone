@@ -61,11 +61,21 @@ export function Canvas({ state, onCachedLinesChange }: CanvasProps) {
       // cannot stop that default canvas from appearing if this instance's
       // async bootstrap is still in flight when cleanup runs. Flagging a
       // critical error short-circuits p5's internal setup sequence before
-      // it gets there.
+      // it gets there. NOTE: `hitCriticalError` is an undocumented/private
+      // p5.js internal field (verified against the installed p5@^2.3.1) with
+      // no public API contract, so a future p5 release could silently change
+      // or remove its effect without a compile error. The queued microtask
+      // sweep below is a version-resilient backstop for that scenario: it
+      // only touches public DOM APIs and re-runs the same removal on the
+      // next microtask, after p5's awaited `presetup` hook (where the
+      // default canvas is actually created) would have had a chance to run.
       (instance as unknown as { hitCriticalError: boolean }).hitCriticalError = true;
       instance.remove();
       p5Ref.current = null;
       container?.querySelectorAll('canvas').forEach((el) => el.remove());
+      queueMicrotask(() => {
+        container?.querySelectorAll('canvas').forEach((el) => el.remove());
+      });
     };
   }, []);
 
