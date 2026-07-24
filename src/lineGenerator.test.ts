@@ -113,6 +113,83 @@ describe('generateLayerLines', () => {
     expect(Math.round(spacingMultiple)).not.toBe(0);
   });
 
+  it('stays exactly parallel at the widened slider extremes (noiseScale 0.0002, noiseStrength 360)', () => {
+    const width = 400;
+    const height = 400;
+
+    const extremeLayer: LayerParams = {
+      color: '#ff8800',
+      baseAngle: 0,
+      noiseScale: 0.0002,
+      noiseStrength: 360,
+      spacing: 40,
+      weight: 1,
+      alpha: 1,
+      seed: 0,
+    };
+
+    // Deterministic, non-constant noise: the path genuinely curves (it is
+    // NOT a constant deviation), so if lines were still sampling the field
+    // independently at their own (x, y) they would drift apart or converge
+    // instead of staying rigidly parallel. This mirrors the existing
+    // noiseStrength: 15 parallelism test above, but re-run at the new
+    // widened slider extremes (very smooth/slow-varying noiseScale and the
+    // new maximum noiseStrength) to confirm the structural guarantee -- the
+    // shared-spine translate does not special-case parameter magnitude --
+    // still holds there.
+    const curvingNoise: NoiseFn = (x) => 0.5 + 0.3 * Math.sin(x);
+
+    const lines = generateLayerLines(extremeLayer, width, height, curvingNoise);
+
+    // Group lines by point-count. With baseAngle 0 the perpendicular offset
+    // between parallel lines is purely vertical, so every line shares the
+    // exact same x-trajectory (only its constant y-offset differs). Lines
+    // whose y stays within the canvas for the whole transit will therefore
+    // all have identical length (same entry/exit step indices).
+    const byLength = new Map<number, (typeof lines)[number][]>();
+    for (const line of lines) {
+      const group = byLength.get(line.length) ?? [];
+      group.push(line);
+      byLength.set(line.length, group);
+    }
+
+    let chosenPair: [(typeof lines)[number], (typeof lines)[number]] | undefined;
+    for (const [length, group] of byLength) {
+      if (length > 50 && group.length >= 2) {
+        chosenPair = [group[0], group[1]];
+        break;
+      }
+    }
+
+    expect(chosenPair).toBeDefined();
+    const [lineA, lineB] = chosenPair!;
+    expect(lineA.length).toBe(lineB.length);
+    expect(lineA.length).toBeGreaterThan(50);
+
+    const EPSILON = 1e-9;
+    const firstDx = lineB[0].x - lineA[0].x;
+    const firstDy = lineB[0].y - lineA[0].y;
+
+    for (let k = 0; k < lineA.length; k++) {
+      const dx = lineB[k].x - lineA[k].x;
+      const dy = lineB[k].y - lineA[k].y;
+      expect(Math.abs(dx - firstDx)).toBeLessThan(EPSILON);
+      expect(Math.abs(dy - firstDy)).toBeLessThan(EPSILON);
+    }
+
+    // Because baseAngle is 0, the perpendicular direction is purely
+    // vertical: the constant separation vector must have (almost) no
+    // horizontal component.
+    expect(Math.abs(firstDx)).toBeLessThan(1e-6);
+
+    // The constant vertical separation must be a whole-number multiple of
+    // the layer's spacing (since every start point is offset by i * spacing
+    // along the perpendicular direction).
+    const spacingMultiple = firstDy / extremeLayer.spacing;
+    expect(Math.abs(spacingMultiple - Math.round(spacingMultiple))).toBeLessThan(1e-6);
+    expect(Math.round(spacingMultiple)).not.toBe(0);
+  });
+
   it('resumes as a NEW segment when the spine exits the canvas and later re-enters', () => {
     const width = 400;
     const height = 200;
