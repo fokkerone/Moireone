@@ -2,6 +2,7 @@ import { GripVertical, Copy, Trash2, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ParamSlider } from './ParamSlider';
+import { WidthCurveEditor } from './WidthCurveEditor';
 import type { LayerParams } from '../types';
 
 interface LayerPanelProps {
@@ -67,6 +68,45 @@ export function LayerPanel({
         <ParamSlider label="Position X" min={-500} max={500} step={10} value={layer.offsetX} onChange={(v) => onUpdate({ offsetX: v })} />
         <ParamSlider label="Position Y" min={-500} max={500} step={10} value={layer.offsetY} onChange={(v) => onUpdate({ offsetY: v })} />
         <ParamSlider label="Deckkraft" min={0} max={1} step={0.01} value={layer.alpha} onChange={(v) => onUpdate({ alpha: v })} />
+
+        <div className="mb-2">
+          <Button
+            size="sm"
+            variant={layer.widthCurveEnabled ? 'default' : 'outline'}
+            onClick={() => onUpdate({ widthCurveEnabled: !layer.widthCurveEnabled })}
+          >
+            {layer.widthCurveEnabled ? 'Linienbreite: Eigene Kurve' : 'Linienbreite: Global'}
+          </Button>
+        </div>
+        {layer.widthCurveEnabled && <WidthCurveEditor layer={layer} onUpdate={onUpdate} />}
+
+        <div className="mb-2">
+          <Button
+            size="sm"
+            variant={layer.envelopeEnabled ? 'default' : 'outline'}
+            onClick={() => onUpdate({ envelopeEnabled: !layer.envelopeEnabled })}
+          >
+            {layer.envelopeEnabled ? 'Ausschlag-Envelope: An' : 'Ausschlag-Envelope: Aus'}
+          </Button>
+        </div>
+        {layer.envelopeEnabled && (
+          <div className="mb-2 flex gap-1">
+            <Button
+              size="sm"
+              variant={layer.envelopeShape === 'linear' ? 'default' : 'outline'}
+              onClick={() => onUpdate({ envelopeShape: 'linear' })}
+            >
+              Linear
+            </Button>
+            <Button
+              size="sm"
+              variant={layer.envelopeShape === 'parabola' ? 'default' : 'outline'}
+              onClick={() => onUpdate({ envelopeShape: 'parabola' })}
+            >
+              Parabel
+            </Button>
+          </div>
+        )}
       </AccordionContent>
     </AccordionItem>
   );
