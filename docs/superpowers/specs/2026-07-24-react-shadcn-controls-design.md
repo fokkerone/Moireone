@@ -15,7 +15,7 @@ Das bestehende Vanilla-DOM-Control-Panel (`src/controls.ts`) und die manuelle p5
 ### Tech-Stack
 - **React 19** (aktuelle Version), eingebunden über `@vitejs/plugin-react` in `vite.config.ts`.
 - **Tailwind CSS v4**: CSS-first-Konfiguration (`@import "tailwindcss";` in einer globalen CSS-Datei, kein `tailwind.config.js` nötig), via `@tailwindcss/vite`-Plugin.
-- **shadcn/ui**: aktuelle CLI (`npx shadcn@latest init`), Style "new-york", Komponenten: `Accordion`, `Slider`, `Input`, `Button`, `Label`.
+- **shadcn/ui**: aktuelle CLI (`pnpm dlx shadcn@latest init`), Style "base-nova" (aktueller Base-UI-Preset der CLI, nicht Radix — daher nicht "new-york"), Komponenten: `Accordion`, `Slider`, `Input`, `Button`, `Label`.
 - **@dnd-kit/core` + `@dnd-kit/sortable`**: für Drag-and-Drop-Neuordnung der Layer-Accordion-Panels (shadcn hat keine eigene DnD-Komponente, dies ist die gängige Kombination in der shadcn-Community).
 
 ### Wiederverwendete Module (unverändert)
