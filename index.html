@@ -7,9 +7,44 @@
     <style>
       html, body { margin: 0; padding: 0; overflow: hidden; }
       canvas { display: block; }
+      #controls {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 280px;
+        height: 100vh;
+        overflow-y: auto;
+        background: rgba(20, 20, 20, 0.85);
+        color: #fff;
+        font-family: sans-serif;
+        font-size: 13px;
+        padding: 12px;
+        box-sizing: border-box;
+        z-index: 10;
+      }
+      #controls fieldset {
+        margin-bottom: 12px;
+        border: 1px solid #444;
+      }
+      #controls .control-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      #controls .control-row input[type="range"] {
+        flex: 1;
+      }
+      #controls button {
+        width: 100%;
+        padding: 8px;
+        margin-top: 8px;
+      }
     </style>
   </head>
   <body>
+    <div id="controls"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

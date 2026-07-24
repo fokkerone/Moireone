@@ -1,23 +1,36 @@
 import p5 from 'p5';
+import type { Point } from './types';
+import { createDefaultState } from './state';
+import { renderPattern } from './render';
+import { createControls } from './controls';
+import { exportSvg } from './svgExport';
+
+let currentState = createDefaultState();
+let cachedLines: Point[][][] = [];
 
 const sketch = (p: p5) => {
   p.setup = () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
+    p.noLoop();
+
+    const controlsContainer = document.getElementById('controls')!;
+    createControls(controlsContainer, currentState, (nextState) => {
+      currentState = nextState;
+      p.redraw();
+    });
+
+    document.getElementById('export-svg-button')!.addEventListener('click', () => {
+      exportSvg(currentState, cachedLines, p.width, p.height);
+    });
   };
 
   p.draw = () => {
-    p.background(20);
-    p.fill(255);
-    p.noStroke();
-    p.circle(
-      p.width / 2 + p.cos(p.frameCount * 0.02) * 100,
-      p.height / 2 + p.sin(p.frameCount * 0.02) * 100,
-      40
-    );
+    cachedLines = renderPattern(p, currentState);
   };
 
   p.windowResized = () => {
     p.resizeCanvas(p.windowWidth, p.windowHeight);
+    p.redraw();
   };
 };
 
