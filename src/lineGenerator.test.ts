@@ -19,6 +19,8 @@ const straightLayer: LayerParams = {
   widthCurveShape: 'linear',
   widthMin: 1,
   widthMax: 1,
+  envelopeEnabled: false,
+  envelopeShape: 'linear',
 };
 
 const neutralNoise: NoiseFn = () => 0.5;
@@ -78,6 +80,8 @@ describe('generateLayerLines', () => {
       widthCurveShape: 'linear',
       widthMin: 1,
       widthMax: 1,
+      envelopeEnabled: false,
+      envelopeShape: 'linear',
     };
 
     // Deterministic, non-constant noise: the displacement genuinely varies
@@ -158,6 +162,8 @@ describe('generateLayerLines', () => {
       widthCurveShape: 'linear',
       widthMin: 1,
       widthMax: 1,
+      envelopeEnabled: false,
+      envelopeShape: 'linear',
     };
     const offsetLayer: LayerParams = { ...baseLayer, offsetX: 50, offsetY: 30 };
 
@@ -225,6 +231,8 @@ describe('generateLayerLines', () => {
       widthCurveShape: 'linear',
       widthMin: 1,
       widthMax: 1,
+      envelopeEnabled: false,
+      envelopeShape: 'linear',
     };
 
     // Deterministic noise keyed on the base point's x coordinate (which is
@@ -287,5 +295,158 @@ describe('generateLayerLines', () => {
     // And both segments must be real, non-degenerate line segments.
     expect(segment1.length).toBeGreaterThan(1);
     expect(segment2.length).toBeGreaterThan(1);
+  });
+
+  // A tall, wide canvas so that (a) the large amplitude used below stays
+  // within the vertical bounds, and (b) the visible x-window sits well away
+  // from the domain's true t=0/t=1 ends (which are always outside the
+  // canvas by construction) while still reaching close enough to the edges
+  // of the VISIBLE window to observe meaningful envelope tapering.
+  const ENVELOPE_WIDTH = 3000;
+  const ENVELOPE_HEIGHT = 300;
+
+  // Deterministic, non-constant noise that stays close to a strong,
+  // consistently positive value (~0.9) across the whole visible domain, so
+  // any tapering observed near the domain's edges is caused by the
+  // envelope -- not by the raw noise happening to be small there.
+  const strongNoise: NoiseFn = (x) => 0.9 + 0.0999 * Math.sin(x * 0.0000037 + 1);
+
+  function buildEnvelopeLayer(envelopeEnabled: boolean): LayerParams {
+    return {
+      colorStart: '#000000', colorEnd: '#ffffff', gradientAngle: 90,
+      baseAngle: 0,
+      noiseScale: 1,
+      amplitude: 100,
+      // Large spacing so only the center line (offset 0) stays inside the
+      // canvas; the +/-spacing neighbors land far outside vertically and
+      // are dropped, leaving exactly one segment to inspect.
+      spacing: 10000,
+      weight: 1,
+      alpha: 1,
+      seed: 0,
+      zoom: 1,
+      visible: true,
+      offsetX: 0,
+      offsetY: 0,
+      widthCurveEnabled: false,
+      widthCurveShape: 'linear',
+      widthMin: 1,
+      widthMax: 1,
+      envelopeEnabled,
+      envelopeShape: 'parabola',
+    };
+  }
+
+  it('envelope (enabled) shrinks displacement near the domain edges but preserves it at the center', () => {
+    const layer = buildEnvelopeLayer(true);
+    const lines = generateLayerLines(layer, ENVELOPE_WIDTH, ENVELOPE_HEIGHT, strongNoise);
+
+    expect(lines.length).toBe(1);
+    const line = lines[0];
+    expect(line.length).toBeGreaterThan(100);
+
+    // baseAngle 0 means the undisplaced travel line is perfectly horizontal
+    // at y = height / 2, so |y - height/2| IS the displacement magnitude.
+    const baseY = ENVELOPE_HEIGHT / 2;
+    const edgeDisplacement = Math.abs(line[0].y - baseY);
+    const centerDisplacement = Math.abs(line[Math.floor(line.length / 2)].y - baseY);
+
+    // The raw noise-driven displacement is large and roughly constant
+    // everywhere (~amplitude * 0.8), so a near-edge value this much smaller
+    // than the center value can only be explained by the envelope's taper.
+    expect(centerDisplacement).toBeGreaterThan(90);
+    expect(edgeDisplacement).toBeLessThan(centerDisplacement * 0.85);
+  });
+
+  it('envelope (disabled) does NOT shrink displacement near the domain edges', () => {
+    const layer = buildEnvelopeLayer(false);
+    const lines = generateLayerLines(layer, ENVELOPE_WIDTH, ENVELOPE_HEIGHT, strongNoise);
+
+    expect(lines.length).toBe(1);
+    const line = lines[0];
+    expect(line.length).toBeGreaterThan(100);
+
+    const baseY = ENVELOPE_HEIGHT / 2;
+    const edgeDisplacement = Math.abs(line[0].y - baseY);
+    const centerDisplacement = Math.abs(line[Math.floor(line.length / 2)].y - baseY);
+
+    // With no envelope, the near-edge displacement is driven by the same
+    // strong raw noise as the center, so it stays comparably large instead
+    // of being suppressed -- proving the toggle actually changes behavior.
+    expect(edgeDisplacement).toBeGreaterThan(centerDisplacement * 0.95);
+  });
+
+  it('keeps lines exactly parallel even with the envelope enabled', () => {
+    const width = 400;
+    const height = 400;
+
+    const curvingLayer: LayerParams = {
+      colorStart: '#000000', colorEnd: '#ffffff', gradientAngle: 90,
+      baseAngle: 0,
+      noiseScale: 0.01,
+      amplitude: 50,
+      spacing: 40,
+      weight: 1,
+      alpha: 1,
+      seed: 0,
+      zoom: 1,
+      visible: true,
+      offsetX: 0,
+      offsetY: 0,
+      widthCurveEnabled: false,
+      widthCurveShape: 'linear',
+      widthMin: 1,
+      widthMax: 1,
+      envelopeEnabled: true,
+      envelopeShape: 'parabola',
+    };
+
+    // Same style of deterministic, non-constant noise as the parallelism
+    // test above: the displacement genuinely varies with position.
+    const curvingNoise: NoiseFn = (x) => 0.5 + 0.3 * Math.sin(x * 0.01);
+
+    const lines = generateLayerLines(curvingLayer, width, height, curvingNoise);
+
+    const byLength = new Map<number, (typeof lines)[number][]>();
+    for (const line of lines) {
+      const group = byLength.get(line.length) ?? [];
+      group.push(line);
+      byLength.set(line.length, group);
+    }
+
+    let chosenPair: [(typeof lines)[number], (typeof lines)[number]] | undefined;
+    for (const [length, group] of byLength) {
+      if (length > 50 && group.length >= 2) {
+        chosenPair = [group[0], group[1]];
+        break;
+      }
+    }
+
+    expect(chosenPair).toBeDefined();
+    const [lineA, lineB] = chosenPair!;
+    expect(lineA.length).toBe(lineB.length);
+    expect(lineA.length).toBeGreaterThan(50);
+
+    const EPSILON = 1e-9;
+    const firstDx = lineB[0].x - lineA[0].x;
+    const firstDy = lineB[0].y - lineA[0].y;
+
+    // The envelope factor at a given step depends only on that step's
+    // position along the domain (t), never on which parallel line/offset is
+    // being drawn -- so every line still shares the exact same displacement
+    // at each step, and the separation vector between any two parallel
+    // lines must stay constant across all shared steps, exactly as without
+    // the envelope.
+    for (let k = 0; k < lineA.length; k++) {
+      const dx = lineB[k].x - lineA[k].x;
+      const dy = lineB[k].y - lineA[k].y;
+      expect(Math.abs(dx - firstDx)).toBeLessThan(EPSILON);
+      expect(Math.abs(dy - firstDy)).toBeLessThan(EPSILON);
+    }
+
+    expect(Math.abs(firstDx)).toBeLessThan(1e-6);
+    const spacingMultiple = firstDy / curvingLayer.spacing;
+    expect(Math.abs(spacingMultiple - Math.round(spacingMultiple))).toBeLessThan(1e-6);
+    expect(Math.round(spacingMultiple)).not.toBe(0);
   });
 });

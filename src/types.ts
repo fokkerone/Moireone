@@ -24,6 +24,8 @@ export interface LayerParams {
   widthCurveShape: 'linear' | 'parabola';
   widthMin: number;
   widthMax: number;
+  envelopeEnabled: boolean;
+  envelopeShape: 'linear' | 'parabola';
 }
 
 export interface PatternState {

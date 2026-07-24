@@ -24,6 +24,8 @@ const state: PatternState = {
       widthCurveShape: 'linear',
       widthMin: 1,
       widthMax: 1,
+      envelopeEnabled: false,
+      envelopeShape: 'linear',
     },
   ],
 };
@@ -93,6 +95,8 @@ describe('buildSvgString', () => {
           widthCurveShape: 'linear',
           widthMin: 1,
           widthMax: 1,
+          envelopeEnabled: false,
+          envelopeShape: 'linear',
         },
       ],
     };
@@ -127,6 +131,8 @@ describe('buildSvgString', () => {
           widthCurveShape: 'linear',
           widthMin: 2,
           widthMax: 8,
+          envelopeEnabled: false,
+          envelopeShape: 'linear',
         },
       ],
     };

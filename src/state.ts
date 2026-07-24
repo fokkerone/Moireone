@@ -24,6 +24,8 @@ export function createDefaultLayer(index: number): LayerParams {
     widthCurveShape: 'linear',
     widthMin: 1,
     widthMax: 4,
+    envelopeEnabled: false,
+    envelopeShape: 'parabola',
   };
 }
 

@@ -1,5 +1,6 @@
 import type { LayerParams, NoiseFn, Point } from './types';
 import { lineOffset } from './flowfield';
+import { widthAt } from './widthProfile';
 
 const STEP_LENGTH = 4;
 
@@ -49,7 +50,11 @@ export function generateLayerLines(
     const by = startY + travelY * STEP_LENGTH * s;
     baseXs[s] = bx;
     baseYs[s] = by;
-    displacements[s] = lineOffset(layer, bx, by, noise);
+    const t = s / (numSteps - 1 || 1);
+    const envelopeFactor = layer.envelopeEnabled
+      ? widthAt(t, layer.envelopeShape, 0, 1)
+      : 1;
+    displacements[s] = lineOffset(layer, bx, by, noise) * envelopeFactor;
   }
 
   const halfCount = Math.ceil(diagonal / layer.spacing / 2);
