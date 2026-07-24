@@ -36,7 +36,7 @@ export function generateLayerLines(
     const startX = centerX + perpX * offset + backX * diagonal;
     const startY = centerY + perpY * offset + backY * diagonal;
 
-    const points: Point[] = [];
+    let points: Point[] = [];
     let x = startX;
     let y = startY;
     let steps = 0;
@@ -48,7 +48,15 @@ export function generateLayerLines(
         hasEnteredCanvas = true;
         points.push({ x, y });
       } else if (hasEnteredCanvas) {
-        break;
+        // The walk has left the canvas after previously being inside it.
+        // Complete the current segment (if it has enough points to be a
+        // line) and start accumulating a fresh segment in case the flow
+        // field curves the walk back into the canvas later.
+        if (points.length > 1) {
+          lines.push(points);
+        }
+        points = [];
+        hasEnteredCanvas = false;
       }
 
       const angle = toRadians(fieldAngle(layer, x, y, noise));
