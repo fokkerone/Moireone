@@ -113,6 +113,115 @@ describe('generateLayerLines', () => {
     expect(Math.round(spacingMultiple)).not.toBe(0);
   });
 
+  it('resumes as a NEW segment when the spine exits the canvas and later re-enters', () => {
+    const width = 400;
+    const height = 200;
+
+    const bounceLayer: LayerParams = {
+      color: '#0000ff',
+      baseAngle: 0,
+      noiseScale: 0.01,
+      noiseStrength: 90,
+      spacing: 40,
+      weight: 1,
+      alpha: 1,
+      seed: 0,
+    };
+
+    // Deterministic noise keyed on the STEP INDEX via a closure counter --
+    // NOT on x/y or on which line is being traced. In the spine-based
+    // implementation the noise function is only ever sampled once per step,
+    // along the single shared spine trace, so per-line-call semantics no
+    // longer make sense here.
+    //
+    // Phase A (steps 0-89):    deviation 0   -> straight travel, carries the
+    //                          spine from its off-canvas start into the
+    //                          canvas along +x.
+    // Phase B (steps 90-129):  deviation +90 -> the spine dives straight
+    //                          down (dx=0, dy=+STEP), driving y out past
+    //                          the bottom of the canvas (height=200).
+    // Phase C (steps 130-169): deviation -90 -> the spine climbs back up
+    //                          (dx=0, dy=-STEP), bringing y back inside.
+    // Phase D (steps 170+):    deviation 0   -> straight travel resumes
+    //                          until the spine eventually exits through
+    //                          x > width.
+    let step = -1;
+    const bouncingNoise: NoiseFn = () => {
+      step++;
+      if (step >= 90 && step < 130) return 1; // full +deviation -> angle +90
+      if (step >= 130 && step < 170) return 0; // full -deviation -> angle -90
+      return 0.5; // no deviation -> straight travel along baseAngle
+    };
+
+    const lines = generateLayerLines(bounceLayer, width, height, bouncingNoise);
+
+    // Independently computed (pure arithmetic, not re-deriving the
+    // production algorithm) expected geometry of the center line (offset 0,
+    // which reproduces the spine's own trajectory exactly):
+    const diagonal = Math.sqrt(width * width + height * height);
+    const spineStartX = width / 2 - diagonal;
+    const EPSILON = 1e-6;
+
+    // Segment 1: accumulates while the spine travels straight in from
+    // off-canvas (k=62, first in-bounds step) until y hits exactly 200 at
+    // k=115 (last in-bounds step before the dive pushes y out of range).
+    const seg1FirstX = spineStartX + 4 * 62;
+    const seg1FirstY = 100;
+    const seg1LastX = spineStartX + 4 * 90; // x froze once the dive began
+    const seg1LastY = 200;
+    const seg1ExpectedLength = 115 - 62 + 1;
+
+    // Segment 2: resumes once the climb-back-up brings y down to exactly
+    // 200 again at k=145 (same x as segment 1's last point -- the spine
+    // revisits the very same point in space after a real gap of steps
+    // 116-144 spent outside the canvas), and runs until x exceeds 400 at
+    // k=241.
+    const seg2FirstX = seg1LastX;
+    const seg2FirstY = 200;
+    const seg2LastX = spineStartX + 4 * 90 + 4 * (241 - 170);
+    const seg2LastY = 100;
+    const seg2ExpectedLength = 241 - 145 + 1;
+
+    function closeTo(a: number, b: number): boolean {
+      return Math.abs(a - b) < EPSILON;
+    }
+
+    const segment1 = lines.find(
+      (line) =>
+        line.length === seg1ExpectedLength &&
+        closeTo(line[0].x, seg1FirstX) &&
+        closeTo(line[0].y, seg1FirstY) &&
+        closeTo(line[line.length - 1].x, seg1LastX) &&
+        closeTo(line[line.length - 1].y, seg1LastY)
+    );
+
+    const segment2 = lines.find(
+      (line) =>
+        line.length === seg2ExpectedLength &&
+        closeTo(line[0].x, seg2FirstX) &&
+        closeTo(line[0].y, seg2FirstY) &&
+        closeTo(line[line.length - 1].x, seg2LastX) &&
+        closeTo(line[line.length - 1].y, seg2LastY)
+    );
+
+    // Both halves of the bounce must be present as SEPARATE segments...
+    expect(segment1).toBeDefined();
+    expect(segment2).toBeDefined();
+    expect(segment1).not.toBe(segment2);
+
+    // ...and they must be genuinely non-contiguous: segment1's last point
+    // and segment2's first point sit at the exact same (x, y) -- the spine
+    // physically revisits that location -- but the two are recorded as
+    // distinct arrays with a real gap of off-canvas steps in between
+    // (k=116..144, while y ranged from 204 up to 260 and back down to 204).
+    // If the old truncate-on-exit behavior had regressed into "just stop
+    // and never resume", segment2 would not exist at all; if resumption
+    // wrongly continued the same array instead of starting fresh, there
+    // would be only one long segment instead of two.
+    expect(segment1![segment1!.length - 1].x).toBeCloseTo(segment2![0].x, 6);
+    expect(segment1![segment1!.length - 1].y).toBeCloseTo(segment2![0].y, 6);
+  });
+
   it('samples the noise field exactly MAX_STEPS times total, regardless of line count', () => {
     let callCount = 0;
     const spyNoise: NoiseFn = () => {
