@@ -14,7 +14,7 @@ export function buildSvgString(
     for (const line of lines) {
       const points = line.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
       polylines.push(
-        `<polyline points="${points}" fill="none" stroke="${layer.color}" stroke-opacity="${layer.alpha}" stroke-width="${layer.weight}" />`
+        `<polyline points="${points}" fill="none" stroke="${layer.color}" stroke-opacity="${layer.alpha}" stroke-width="${layer.weight}" stroke-linecap="butt" />`
       );
     }
   });

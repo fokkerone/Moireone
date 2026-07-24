@@ -38,6 +38,7 @@ describe('buildSvgString', () => {
     expect(svg).toContain('stroke="#ff0000"');
     expect(svg).toContain('stroke-opacity="0.5"');
     expect(svg).toContain('stroke-width="2"');
+    expect(svg).toContain('stroke-linecap="butt"');
   });
 
   it('produces parseable, error-free XML', () => {

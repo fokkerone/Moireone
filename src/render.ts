@@ -5,6 +5,7 @@ import { generateLayerLines } from './lineGenerator';
 export function renderPattern(p: p5, state: PatternState): Point[][][] {
   (p.drawingContext as CanvasRenderingContext2D).globalAlpha = 1;
   p.background(state.background);
+  p.strokeCap(p.SQUARE);
   const layerLines: Point[][][] = [];
 
   state.layers.forEach((layer) => {
