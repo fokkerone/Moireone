@@ -46,8 +46,9 @@ export function renderPattern(p: p5, state: PatternState): Point[][][] {
       (p.drawingContext as CanvasRenderingContext2D).globalAlpha = layer.alpha;
 
       if (layer.widthCurveEnabled) {
-        ctx.fillStyle = gradient;
         p.noStroke();
+        p.fill(255);
+        ctx.fillStyle = gradient;
 
         for (const line of lines) {
           const widths = line.map((_, i) =>
@@ -61,6 +62,7 @@ export function renderPattern(p: p5, state: PatternState): Point[][][] {
           p.endShape(p.CLOSE);
         }
       } else {
+        p.stroke(0);
         ctx.strokeStyle = gradient;
         p.strokeWeight(layer.weight);
         p.noFill();
