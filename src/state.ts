@@ -14,6 +14,7 @@ export function createDefaultLayer(index: number): LayerParams {
     weight: 1.5,
     alpha: 0.6,
     seed: index * 100,
+    turnRate: 6,
   };
 }
 

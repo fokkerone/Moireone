@@ -26,9 +26,15 @@ function traceSpineMovements(
   const movements: Vector[] = [];
   let x = startX;
   let y = startY;
+  let heading = layer.baseAngle;
 
   for (let step = 0; step < MAX_STEPS; step++) {
-    const angle = toRadians(fieldAngle(layer, x, y, noise));
+    const target = fieldAngle(layer, x, y, noise);
+    const rawDelta = target - heading;
+    const clampedDelta = Math.max(-layer.turnRate, Math.min(layer.turnRate, rawDelta));
+    heading += clampedDelta;
+
+    const angle = toRadians(heading);
     const dx = Math.cos(angle) * STEP_LENGTH;
     const dy = Math.sin(angle) * STEP_LENGTH;
     movements.push({ dx, dy });

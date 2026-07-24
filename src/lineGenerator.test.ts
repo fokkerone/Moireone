@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateLayerLines } from './lineGenerator';
-import type { LayerParams, NoiseFn } from './types';
+import type { LayerParams, NoiseFn, Point } from './types';
 
 const MAX_STEPS = 2000;
 
@@ -13,6 +13,7 @@ const straightLayer: LayerParams = {
   weight: 1,
   alpha: 1,
   seed: 0,
+  turnRate: 1000,
 };
 
 const neutralNoise: NoiseFn = () => 0.5;
@@ -54,6 +55,7 @@ describe('generateLayerLines', () => {
       weight: 1,
       alpha: 1,
       seed: 0,
+      turnRate: 1000,
     };
 
     // Deterministic, non-constant noise: the path genuinely curves (it is
@@ -126,6 +128,7 @@ describe('generateLayerLines', () => {
       weight: 1,
       alpha: 1,
       seed: 0,
+      turnRate: 1000,
     };
 
     // Deterministic, non-constant noise: the path genuinely curves (it is
@@ -203,6 +206,7 @@ describe('generateLayerLines', () => {
       weight: 1,
       alpha: 1,
       seed: 0,
+      turnRate: 1000,
     };
 
     // Deterministic noise keyed on the STEP INDEX via a closure counter --
@@ -312,5 +316,89 @@ describe('generateLayerLines', () => {
     generateLayerLines({ ...straightLayer, spacing: 2 }, 200, 200, spyNoise);
 
     expect(callCount).toBe(MAX_STEPS);
+  });
+
+  it('turnRate clamps the per-step heading change and genuinely changes the output geometry', () => {
+    const width = 2000;
+    const height = 2000;
+
+    const turnLayer: LayerParams = {
+      color: '#123456',
+      baseAngle: 0,
+      noiseScale: 0.01,
+      noiseStrength: 30,
+      spacing: 1000,
+      weight: 1,
+      alpha: 1,
+      seed: 0,
+      turnRate: 2,
+    };
+
+    // Alternates the target deviation every single step between -30 and
+    // +30 degrees -- an instantaneous 60-degree target swing every step,
+    // similar in spirit to the bounceLayer's step-indexed noise above, but
+    // designed to prove the turnRate clamp rather than segment re-entry.
+    // Without heading inertia this would translate directly into an
+    // equally abrupt, jagged heading change every step.
+    function makeAlternatingNoise(): NoiseFn {
+      let toggle = 0;
+      return () => {
+        toggle = 1 - toggle;
+        return toggle;
+      };
+    }
+
+    function directionDegrees(a: Point, b: Point): number {
+      return (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
+    }
+
+    function angularDiff(a: number, b: number): number {
+      let diff = b - a;
+      while (diff > 180) diff -= 360;
+      while (diff < -180) diff += 360;
+      return diff;
+    }
+
+    function longestLine(lines: Point[][]): Point[] {
+      return lines.reduce((longest, l) => (l.length > longest.length ? l : longest));
+    }
+
+    // Small turnRate: heading must never change by more than turnRate
+    // degrees between consecutive steps.
+    const smallTurnLines = generateLayerLines(turnLayer, width, height, makeAlternatingNoise());
+    const centerSmall = longestLine(smallTurnLines);
+    expect(centerSmall.length).toBeGreaterThan(50);
+
+    const EPSILON = 1e-6;
+    for (let k = 1; k < centerSmall.length - 1; k++) {
+      const dirA = directionDegrees(centerSmall[k - 1], centerSmall[k]);
+      const dirB = directionDegrees(centerSmall[k], centerSmall[k + 1]);
+      const diff = Math.abs(angularDiff(dirA, dirB));
+      expect(diff).toBeLessThanOrEqual(turnLayer.turnRate + EPSILON);
+    }
+
+    // Large turnRate: same noise function, only turnRate differs. This
+    // must produce a visibly different (more abrupt) trajectory, proving
+    // turnRate actually changes the generated geometry rather than being
+    // a no-op.
+    const largeTurnLines = generateLayerLines(
+      { ...turnLayer, turnRate: 1000 },
+      width,
+      height,
+      makeAlternatingNoise()
+    );
+    const centerLarge = longestLine(largeTurnLines);
+    expect(centerLarge.length).toBeGreaterThan(50);
+
+    const sampleCount = Math.min(centerSmall.length, centerLarge.length, 20);
+    let foundDivergence = false;
+    for (let k = 0; k < sampleCount; k++) {
+      const dy = Math.abs(centerSmall[k].y - centerLarge[k].y);
+      if (dy > 0.5) {
+        foundDivergence = true;
+        break;
+      }
+    }
+    expect(foundDivergence).toBe(true);
   });
 });

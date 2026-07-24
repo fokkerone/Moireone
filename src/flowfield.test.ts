@@ -11,6 +11,7 @@ const baseLayer: LayerParams = {
   weight: 1,
   alpha: 1,
   seed: 0,
+  turnRate: 1000,
 };
 
 describe('fieldAngle', () => {

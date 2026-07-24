@@ -14,6 +14,7 @@ export interface LayerParams {
   weight: number;
   alpha: number;
   seed: number;
+  turnRate: number;
 }
 
 export interface PatternState {
