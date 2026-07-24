@@ -6,7 +6,9 @@ export interface Point {
 export type NoiseFn = (x: number, y: number, z: number) => number;
 
 export interface LayerParams {
-  color: string;
+  colorStart: string;
+  colorEnd: string;
+  gradientAngle: number;
   baseAngle: number;
   noiseScale: number;
   amplitude: number;

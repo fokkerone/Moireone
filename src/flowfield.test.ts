@@ -3,7 +3,7 @@ import { lineOffset } from './flowfield';
 import type { LayerParams, NoiseFn } from './types';
 
 const baseLayer: LayerParams = {
-  color: '#ff0000',
+  colorStart: '#000000', colorEnd: '#ffffff', gradientAngle: 90,
   baseAngle: 45,
   noiseScale: 0.01,
   amplitude: 30,

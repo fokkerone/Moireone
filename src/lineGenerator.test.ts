@@ -3,7 +3,7 @@ import { generateLayerLines } from './lineGenerator';
 import type { LayerParams, NoiseFn } from './types';
 
 const straightLayer: LayerParams = {
-  color: '#00ff00',
+  colorStart: '#000000', colorEnd: '#ffffff', gradientAngle: 90,
   baseAngle: 0,
   noiseScale: 0.01,
   amplitude: 0,
@@ -56,7 +56,7 @@ describe('generateLayerLines', () => {
     const height = 400;
 
     const curvingLayer: LayerParams = {
-      color: '#ff00ff',
+      colorStart: '#000000', colorEnd: '#ffffff', gradientAngle: 90,
       baseAngle: 0,
       noiseScale: 0.01,
       amplitude: 50,
@@ -133,7 +133,7 @@ describe('generateLayerLines', () => {
     const height = 200;
 
     const bounceLayer: LayerParams = {
-      color: '#0000ff',
+      colorStart: '#000000', colorEnd: '#ffffff', gradientAngle: 90,
       baseAngle: 0,
       // noiseScale 1 / zoom 1 => effective scale is 1, so the noise
       // function receives the RAW base-point x coordinate unmodified,

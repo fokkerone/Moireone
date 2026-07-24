@@ -6,7 +6,9 @@ const state: PatternState = {
   background: '#111111',
   layers: [
     {
-      color: '#ff0000',
+      colorStart: '#ff0000',
+      colorEnd: '#0000ff',
+      gradientAngle: 45,
       baseAngle: 0,
       noiseScale: 0.01,
       amplitude: 50,
@@ -35,10 +37,21 @@ describe('buildSvgString', () => {
     ];
     const svg = buildSvgString(state, [[line]], 300, 200);
     expect(svg).toContain('points="0.00,0.00 10.00,10.00"');
-    expect(svg).toContain('stroke="#ff0000"');
+    expect(svg).toContain('stroke="url(#layer-gradient-0)"');
     expect(svg).toContain('stroke-opacity="0.5"');
     expect(svg).toContain('stroke-width="2"');
     expect(svg).toContain('stroke-linecap="butt"');
+  });
+
+  it('includes a linearGradient definition matching the layer colorStart/colorEnd', () => {
+    const line: Point[] = [
+      { x: 0, y: 0 },
+      { x: 10, y: 10 },
+    ];
+    const svg = buildSvgString(state, [[line]], 300, 200);
+    expect(svg).toContain('<linearGradient id="layer-gradient-0"');
+    expect(svg).toContain('stop-color="#ff0000"');
+    expect(svg).toContain('stop-color="#0000ff"');
   });
 
   it('produces parseable, error-free XML', () => {
@@ -56,7 +69,9 @@ describe('buildSvgString', () => {
       background: '#111111',
       layers: [
         {
-          color: '#ff0000',
+          colorStart: '#ff0000',
+          colorEnd: '#0000ff',
+          gradientAngle: 45,
           baseAngle: 0,
           noiseScale: 0.01,
           amplitude: 50,

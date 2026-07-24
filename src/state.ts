@@ -1,12 +1,14 @@
 import type { LayerParams, PatternState } from './types';
-import { getDefaultLayerColor } from './palette';
+import { getDefaultLayerColor, getDefaultLayerColorEnd } from './palette';
 
 export const MIN_LAYERS = 2;
 export const MAX_LAYERS = 5;
 
 export function createDefaultLayer(index: number): LayerParams {
   return {
-    color: getDefaultLayerColor(index),
+    colorStart: getDefaultLayerColor(index),
+    colorEnd: getDefaultLayerColorEnd(index),
+    gradientAngle: 90,
     baseAngle: (index * 25) % 360,
     noiseScale: 0.001,
     amplitude: 300,

@@ -44,14 +44,22 @@ export function LayerPanel({
       </div>
       <AccordionContent>
         <div className="mb-2 flex items-center gap-2">
-          <label className="w-32 shrink-0 text-xs">Farbe</label>
+          <label className="w-32 shrink-0 text-xs">Startfarbe</label>
           <input
             type="color"
-            value={layer.color}
-            onChange={(e) => onUpdate({ color: e.target.value })}
+            value={layer.colorStart}
+            onChange={(e) => onUpdate({ colorStart: e.target.value })}
+            className="h-8 w-16 rounded border"
+          />
+          <label className="shrink-0 text-xs">Endfarbe</label>
+          <input
+            type="color"
+            value={layer.colorEnd}
+            onChange={(e) => onUpdate({ colorEnd: e.target.value })}
             className="h-8 w-16 rounded border"
           />
         </div>
+        <ParamSlider label="Verlauf-Winkel" min={0} max={360} step={1} value={layer.gradientAngle} onChange={(v) => onUpdate({ gradientAngle: v })} />
         <ParamSlider label="Winkel" min={0} max={360} step={1} value={layer.baseAngle} onChange={(v) => onUpdate({ baseAngle: v })} />
         <ParamSlider label="Noise-Scale" min={0.0002} max={0.05} step={0.0002} value={layer.noiseScale} onChange={(v) => onUpdate({ noiseScale: v })} />
         <ParamSlider label="Amplitude" min={0} max={500} step={5} value={layer.amplitude} onChange={(v) => onUpdate({ amplitude: v })} />

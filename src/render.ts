@@ -2,6 +2,32 @@ import type p5 from 'p5';
 import type { PatternState, Point } from './types';
 import { generateLayerLines } from './lineGenerator';
 
+function buildGradient(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  angleDegrees: number,
+  colorStart: string,
+  colorEnd: string
+): CanvasGradient {
+  const angleRad = (angleDegrees * Math.PI) / 180;
+  const diagonal = Math.sqrt(width * width + height * height);
+  const half = diagonal / 2;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const dx = Math.cos(angleRad);
+  const dy = Math.sin(angleRad);
+  const gradient = ctx.createLinearGradient(
+    centerX - dx * half,
+    centerY - dy * half,
+    centerX + dx * half,
+    centerY + dy * half
+  );
+  gradient.addColorStop(0, colorStart);
+  gradient.addColorStop(1, colorEnd);
+  return gradient;
+}
+
 export function renderPattern(p: p5, state: PatternState): Point[][][] {
   (p.drawingContext as CanvasRenderingContext2D).globalAlpha = 1;
   p.background(state.background);
@@ -13,7 +39,8 @@ export function renderPattern(p: p5, state: PatternState): Point[][][] {
       const lines = generateLayerLines(layer, p.width, p.height, (x, y, z) => p.noise(x, y, z));
       layerLines.push(lines);
 
-      p.stroke(layer.color);
+      const ctx = p.drawingContext as CanvasRenderingContext2D;
+      ctx.strokeStyle = buildGradient(ctx, p.width, p.height, layer.gradientAngle, layer.colorStart, layer.colorEnd);
       p.strokeWeight(layer.weight);
       p.noFill();
       (p.drawingContext as CanvasRenderingContext2D).globalAlpha = layer.alpha;
