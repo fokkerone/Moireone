@@ -59,8 +59,8 @@ function renderLayerBlock(
 
   block.appendChild(createColorPicker('Farbe', layer.color, (v) => updateLayer(index, { color: v })));
   block.appendChild(createSlider('Winkel', 0, 360, 1, layer.baseAngle, (v) => updateLayer(index, { baseAngle: v })));
-  block.appendChild(createSlider('Noise-Scale', 0.001, 0.05, 0.001, layer.noiseScale, (v) => updateLayer(index, { noiseScale: v })));
-  block.appendChild(createSlider('Noise-Stärke', 0, 180, 1, layer.noiseStrength, (v) => updateLayer(index, { noiseStrength: v })));
+  block.appendChild(createSlider('Noise-Scale', 0.0002, 0.05, 0.0002, layer.noiseScale, (v) => updateLayer(index, { noiseScale: v })));
+  block.appendChild(createSlider('Noise-Stärke', 0, 360, 1, layer.noiseStrength, (v) => updateLayer(index, { noiseStrength: v })));
   block.appendChild(createSlider('Abstand', 4, 60, 1, layer.spacing, (v) => updateLayer(index, { spacing: v })));
   block.appendChild(createSlider('Strichstärke', 0.5, 6, 0.1, layer.weight, (v) => updateLayer(index, { weight: v })));
   block.appendChild(createSlider('Deckkraft', 0, 1, 0.01, layer.alpha, (v) => updateLayer(index, { alpha: v })));
