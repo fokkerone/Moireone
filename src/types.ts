@@ -18,6 +18,8 @@ export interface LayerParams {
   seed: number;
   zoom: number;
   visible: boolean;
+  offsetX: number;
+  offsetY: number;
 }
 
 export interface PatternState {

@@ -13,6 +13,8 @@ const straightLayer: LayerParams = {
   seed: 0,
   zoom: 1,
   visible: true,
+  offsetX: 0,
+  offsetY: 0,
 };
 
 const neutralNoise: NoiseFn = () => 0.5;
@@ -66,6 +68,8 @@ describe('generateLayerLines', () => {
       seed: 0,
       zoom: 1,
       visible: true,
+      offsetX: 0,
+      offsetY: 0,
     };
 
     // Deterministic, non-constant noise: the displacement genuinely varies
@@ -125,6 +129,63 @@ describe('generateLayerLines', () => {
     expect(Math.round(spacingMultiple)).not.toBe(0);
   });
 
+  it('shifts the entire generated pattern by exactly (offsetX, offsetY)', () => {
+    const width = 400;
+    const height = 400;
+
+    const baseLayer: LayerParams = {
+      colorStart: '#000000', colorEnd: '#ffffff', gradientAngle: 90,
+      baseAngle: 0,
+      noiseScale: 0.01,
+      amplitude: 0,
+      spacing: 20,
+      weight: 1,
+      alpha: 1,
+      seed: 0,
+      zoom: 1,
+      visible: true,
+      offsetX: 0,
+      offsetY: 0,
+    };
+    const offsetLayer: LayerParams = { ...baseLayer, offsetX: 50, offsetY: 30 };
+
+    const neutralNoise: NoiseFn = () => 0.5;
+
+    const baseLines = generateLayerLines(baseLayer, width, height, neutralNoise);
+    const offsetLines = generateLayerLines(offsetLayer, width, height, neutralNoise);
+
+    // amplitude 0 -> every line is perfectly horizontal; the "center" line
+    // (perpendicular offset 0) sits at y = height/2 for the base layer and
+    // y = height/2 + offsetY for the offset layer.
+    const baseCenter = baseLines.find((line) =>
+      line.every((p) => Math.abs(p.y - height / 2) < 1e-6)
+    );
+    const offsetCenter = offsetLines.find((line) =>
+      line.every((p) => Math.abs(p.y - (height / 2 + 30)) < 1e-6)
+    );
+
+    expect(baseCenter).toBeDefined();
+    expect(offsetCenter).toBeDefined();
+    expect(baseCenter!.length).toBeGreaterThan(2);
+    expect(offsetCenter!.length).toBeGreaterThan(2);
+
+    // Pick a point from the middle of the base line (safely away from
+    // canvas-edge clipping, whose entry/exit step differs slightly between
+    // the two runs because of the x-offset) and locate the point in the
+    // offset line generated from the exact same underlying travel-axis
+    // step -- identified by its x-coordinate landing at exactly
+    // basePoint.x + offsetX, since the offset shifts the whole travel axis
+    // by a constant amount independent of step index.
+    const basePoint = baseCenter![Math.floor(baseCenter!.length / 2)];
+    const matchingOffsetPoint = offsetCenter!.find(
+      (p) => Math.abs(p.x - (basePoint.x + 50)) < 1e-6
+    );
+
+    expect(matchingOffsetPoint).toBeDefined();
+    expect(matchingOffsetPoint!.x - basePoint.x).toBeCloseTo(50, 6);
+    expect(matchingOffsetPoint!.y - basePoint.y).toBeCloseTo(30, 6);
+  });
+
   it('resumes as a NEW segment when a line exits the canvas and later re-enters', () => {
     // Wide canvas so the natural x-exit (baseX > width) happens well after
     // our engineered y-excursion, giving room to observe a genuine
@@ -146,6 +207,8 @@ describe('generateLayerLines', () => {
       seed: 0,
       zoom: 1,
       visible: true,
+      offsetX: 0,
+      offsetY: 0,
     };
 
     // Deterministic noise keyed on the base point's x coordinate (which is

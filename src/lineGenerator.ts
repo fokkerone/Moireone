@@ -27,8 +27,8 @@ export function generateLayerLines(
   const perpX = Math.cos(perpAngle);
   const perpY = Math.sin(perpAngle);
 
-  const centerX = width / 2;
-  const centerY = height / 2;
+  const centerX = width / 2 + layer.offsetX;
+  const centerY = height / 2 + layer.offsetY;
 
   // Start well behind the canvas along the travel axis, symmetric to the
   // old spine-start construction, so every line spans the full canvas

@@ -18,6 +18,8 @@ const state: PatternState = {
       seed: 0,
       zoom: 1,
       visible: true,
+      offsetX: 0,
+      offsetY: 0,
     },
   ],
 };
@@ -81,6 +83,8 @@ describe('buildSvgString', () => {
           seed: 0,
           zoom: 1,
           visible: false,
+          offsetX: 0,
+          offsetY: 0,
         },
       ],
     };

@@ -18,6 +18,8 @@ export function createDefaultLayer(index: number): LayerParams {
     seed: index * 100,
     zoom: 1,
     visible: true,
+    offsetX: 0,
+    offsetY: 0,
   };
 }
 

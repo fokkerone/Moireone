@@ -13,6 +13,8 @@ const baseLayer: LayerParams = {
   seed: 0,
   zoom: 1,
   visible: true,
+  offsetX: 0,
+  offsetY: 0,
 };
 
 describe('lineOffset', () => {
