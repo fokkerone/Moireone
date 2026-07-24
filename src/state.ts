@@ -26,11 +26,35 @@ export function createDefaultState(): PatternState {
   };
 }
 
-export function setLayerCount(state: PatternState, count: number): PatternState {
-  const clamped = Math.min(MAX_LAYERS, Math.max(MIN_LAYERS, count));
-  const layers = state.layers.slice(0, clamped);
-  while (layers.length < clamped) {
-    layers.push(createDefaultLayer(layers.length));
+export function duplicateLayer(state: PatternState, index: number): PatternState {
+  if (state.layers.length >= MAX_LAYERS) {
+    return state;
   }
+  const layers = [...state.layers];
+  const copy: LayerParams = { ...layers[index] };
+  layers.splice(index + 1, 0, copy);
   return { ...state, layers };
+}
+
+export function removeLayer(state: PatternState, index: number): PatternState {
+  if (state.layers.length <= MIN_LAYERS) {
+    return state;
+  }
+  const layers = state.layers.filter((_, i) => i !== index);
+  return { ...state, layers };
+}
+
+export function reorderLayers(state: PatternState, fromIndex: number, toIndex: number): PatternState {
+  const layers = [...state.layers];
+  const [moved] = layers.splice(fromIndex, 1);
+  layers.splice(toIndex, 0, moved);
+  return { ...state, layers };
+}
+
+export function setGlobalSpacing(state: PatternState, spacing: number): PatternState {
+  return { ...state, layers: state.layers.map((layer) => ({ ...layer, spacing })) };
+}
+
+export function setGlobalWeight(state: PatternState, weight: number): PatternState {
+  return { ...state, layers: state.layers.map((layer) => ({ ...layer, weight })) };
 }
