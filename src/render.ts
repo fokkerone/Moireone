@@ -3,6 +3,7 @@ import type { PatternState, Point } from './types';
 import { generateLayerLines } from './lineGenerator';
 
 export function renderPattern(p: p5, state: PatternState): Point[][][] {
+  (p.drawingContext as CanvasRenderingContext2D).globalAlpha = 1;
   p.background(state.background);
   const layerLines: Point[][][] = [];
 
