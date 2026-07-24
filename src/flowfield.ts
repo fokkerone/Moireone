@@ -6,7 +6,8 @@ export function fieldAngle(
   y: number,
   noise: NoiseFn
 ): number {
-  const n = noise(x * layer.noiseScale, y * layer.noiseScale, layer.seed);
+  const effectiveScale = layer.noiseScale / layer.zoom;
+  const n = noise(x * effectiveScale, y * effectiveScale, layer.seed);
   const deviationDegrees = (n - 0.5) * 2 * layer.noiseStrength;
   return layer.baseAngle + deviationDegrees;
 }

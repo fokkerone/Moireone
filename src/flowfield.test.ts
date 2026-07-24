@@ -11,6 +11,7 @@ const baseLayer: LayerParams = {
   weight: 1,
   alpha: 1,
   seed: 0,
+  zoom: 1,
   turnRate: 1000,
 };
 
@@ -38,5 +39,23 @@ describe('fieldAngle', () => {
     };
     fieldAngle({ ...baseLayer, noiseScale: 0.02, seed: 7 }, 50, 200, spyNoise);
     expect(received).toEqual([1, 4, 7]);
+  });
+
+  it('divides noiseScale by zoom before sampling the noise function', () => {
+    let receivedA: [number, number, number] | null = null;
+    const spyA: NoiseFn = (x, y, z) => {
+      receivedA = [x, y, z];
+      return 0.5;
+    };
+    fieldAngle({ ...baseLayer, noiseScale: 0.02, zoom: 2 }, 50, 200, spyA);
+
+    let receivedB: [number, number, number] | null = null;
+    const spyB: NoiseFn = (x, y, z) => {
+      receivedB = [x, y, z];
+      return 0.5;
+    };
+    fieldAngle({ ...baseLayer, noiseScale: 0.01, zoom: 1 }, 50, 200, spyB);
+
+    expect(receivedA).toEqual(receivedB);
   });
 });

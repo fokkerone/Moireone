@@ -13,6 +13,7 @@ const straightLayer: LayerParams = {
   weight: 1,
   alpha: 1,
   seed: 0,
+  zoom: 1,
   turnRate: 1000,
 };
 
@@ -55,6 +56,7 @@ describe('generateLayerLines', () => {
       weight: 1,
       alpha: 1,
       seed: 0,
+      zoom: 1,
       turnRate: 1000,
     };
 
@@ -128,6 +130,7 @@ describe('generateLayerLines', () => {
       weight: 1,
       alpha: 1,
       seed: 0,
+      zoom: 1,
       turnRate: 1000,
     };
 
@@ -206,6 +209,7 @@ describe('generateLayerLines', () => {
       weight: 1,
       alpha: 1,
       seed: 0,
+      zoom: 1,
       turnRate: 1000,
     };
 
@@ -331,6 +335,7 @@ describe('generateLayerLines', () => {
       weight: 1,
       alpha: 1,
       seed: 0,
+      zoom: 1,
       turnRate: 2,
     };
 

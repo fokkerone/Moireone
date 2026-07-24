@@ -14,6 +14,7 @@ const state: PatternState = {
       weight: 2,
       alpha: 0.5,
       seed: 0,
+      zoom: 1,
       turnRate: 1000,
     },
   ],
