@@ -1,6 +1,8 @@
 import type p5 from 'p5';
 import type { PatternState, Point } from './types';
 import { generateLayerLines } from './lineGenerator';
+import { widthAt } from './widthProfile';
+import { buildRibbon } from './ribbon';
 
 function buildGradient(
   ctx: CanvasRenderingContext2D,
@@ -40,17 +42,36 @@ export function renderPattern(p: p5, state: PatternState): Point[][][] {
       layerLines.push(lines);
 
       const ctx = p.drawingContext as CanvasRenderingContext2D;
-      ctx.strokeStyle = buildGradient(ctx, p.width, p.height, layer.gradientAngle, layer.colorStart, layer.colorEnd);
-      p.strokeWeight(layer.weight);
-      p.noFill();
+      const gradient = buildGradient(ctx, p.width, p.height, layer.gradientAngle, layer.colorStart, layer.colorEnd);
       (p.drawingContext as CanvasRenderingContext2D).globalAlpha = layer.alpha;
 
-      for (const line of lines) {
-        p.beginShape();
-        for (const point of line) {
-          p.vertex(point.x, point.y);
+      if (layer.widthCurveEnabled) {
+        ctx.fillStyle = gradient;
+        p.noStroke();
+
+        for (const line of lines) {
+          const widths = line.map((_, i) =>
+            widthAt(i / (line.length - 1 || 1), layer.widthCurveShape, layer.widthMin, layer.widthMax)
+          );
+          const ribbon = buildRibbon(line, widths);
+          p.beginShape();
+          for (const point of ribbon) {
+            p.vertex(point.x, point.y);
+          }
+          p.endShape(p.CLOSE);
         }
-        p.endShape();
+      } else {
+        ctx.strokeStyle = gradient;
+        p.strokeWeight(layer.weight);
+        p.noFill();
+
+        for (const line of lines) {
+          p.beginShape();
+          for (const point of line) {
+            p.vertex(point.x, point.y);
+          }
+          p.endShape();
+        }
       }
     } else {
       layerLines.push([]);

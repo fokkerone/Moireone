@@ -1,4 +1,6 @@
 import type { PatternState, Point } from './types';
+import { widthAt } from './widthProfile';
+import { buildRibbon } from './ribbon';
 
 function buildGradientDef(
   layerIndex: number,
@@ -40,10 +42,23 @@ export function buildSvgString(
     );
     const lines = layerLines[layerIndex] ?? [];
     for (const line of lines) {
-      const points = line.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
-      polylines.push(
-        `<polyline points="${points}" fill="none" stroke="url(#layer-gradient-${layerIndex})" stroke-opacity="${layer.alpha}" stroke-width="${layer.weight}" stroke-linecap="butt" />`
-      );
+      if (layer.widthCurveEnabled) {
+        const widths = line.map((_, i) =>
+          widthAt(i / (line.length - 1 || 1), layer.widthCurveShape, layer.widthMin, layer.widthMax)
+        );
+        const ribbon = buildRibbon(line, widths);
+        const d = ribbon
+          .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(2)},${p.y.toFixed(2)}`)
+          .join(' ') + ' Z';
+        polylines.push(
+          `<path d="${d}" fill="url(#layer-gradient-${layerIndex})" fill-opacity="${layer.alpha}" stroke="none" />`
+        );
+      } else {
+        const points = line.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
+        polylines.push(
+          `<polyline points="${points}" fill="none" stroke="url(#layer-gradient-${layerIndex})" stroke-opacity="${layer.alpha}" stroke-width="${layer.weight}" stroke-linecap="butt" />`
+        );
+      }
     }
   });
 

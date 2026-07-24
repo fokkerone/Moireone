@@ -20,6 +20,10 @@ export interface LayerParams {
   visible: boolean;
   offsetX: number;
   offsetY: number;
+  widthCurveEnabled: boolean;
+  widthCurveShape: 'linear' | 'parabola';
+  widthMin: number;
+  widthMax: number;
 }
 
 export interface PatternState {

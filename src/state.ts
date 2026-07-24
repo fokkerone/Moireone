@@ -20,6 +20,10 @@ export function createDefaultLayer(index: number): LayerParams {
     visible: true,
     offsetX: 0,
     offsetY: 0,
+    widthCurveEnabled: false,
+    widthCurveShape: 'linear',
+    widthMin: 1,
+    widthMax: 4,
   };
 }
 

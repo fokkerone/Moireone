@@ -15,6 +15,10 @@ const straightLayer: LayerParams = {
   visible: true,
   offsetX: 0,
   offsetY: 0,
+  widthCurveEnabled: false,
+  widthCurveShape: 'linear',
+  widthMin: 1,
+  widthMax: 1,
 };
 
 const neutralNoise: NoiseFn = () => 0.5;
@@ -70,6 +74,10 @@ describe('generateLayerLines', () => {
       visible: true,
       offsetX: 0,
       offsetY: 0,
+      widthCurveEnabled: false,
+      widthCurveShape: 'linear',
+      widthMin: 1,
+      widthMax: 1,
     };
 
     // Deterministic, non-constant noise: the displacement genuinely varies
@@ -146,6 +154,10 @@ describe('generateLayerLines', () => {
       visible: true,
       offsetX: 0,
       offsetY: 0,
+      widthCurveEnabled: false,
+      widthCurveShape: 'linear',
+      widthMin: 1,
+      widthMax: 1,
     };
     const offsetLayer: LayerParams = { ...baseLayer, offsetX: 50, offsetY: 30 };
 
@@ -209,6 +221,10 @@ describe('generateLayerLines', () => {
       visible: true,
       offsetX: 0,
       offsetY: 0,
+      widthCurveEnabled: false,
+      widthCurveShape: 'linear',
+      widthMin: 1,
+      widthMax: 1,
     };
 
     // Deterministic noise keyed on the base point's x coordinate (which is
