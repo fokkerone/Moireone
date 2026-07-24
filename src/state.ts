@@ -15,6 +15,7 @@ export function createDefaultLayer(index: number): LayerParams {
     alpha: 0.6,
     seed: index * 100,
     zoom: 1,
+    visible: true,
   };
 }
 

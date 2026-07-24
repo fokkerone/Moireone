@@ -15,6 +15,7 @@ const state: PatternState = {
       alpha: 0.5,
       seed: 0,
       zoom: 1,
+      visible: true,
     },
   ],
 };
@@ -48,5 +49,31 @@ describe('buildSvgString', () => {
     const svg = buildSvgString(state, [[line]], 300, 200);
     const doc = new DOMParser().parseFromString(svg, 'image/svg+xml');
     expect(doc.querySelector('parsererror')).toBeNull();
+  });
+
+  it('omits polylines for a hidden layer even when stale cached layerLines contain points for it', () => {
+    const hiddenState: PatternState = {
+      background: '#111111',
+      layers: [
+        {
+          color: '#ff0000',
+          baseAngle: 0,
+          noiseScale: 0.01,
+          amplitude: 50,
+          spacing: 10,
+          weight: 2,
+          alpha: 0.5,
+          seed: 0,
+          zoom: 1,
+          visible: false,
+        },
+      ],
+    };
+    const staleLine: Point[] = [
+      { x: 0, y: 0 },
+      { x: 10, y: 10 },
+    ];
+    const svg = buildSvgString(hiddenState, [[staleLine]], 300, 200);
+    expect(svg).not.toContain('<polyline');
   });
 });

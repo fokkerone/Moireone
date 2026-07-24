@@ -10,6 +10,7 @@ export function buildSvgString(
 
   const polylines: string[] = [];
   state.layers.forEach((layer, layerIndex) => {
+    if (!layer.visible) return;
     const lines = layerLines[layerIndex] ?? [];
     for (const line of lines) {
       const points = line.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');

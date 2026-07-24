@@ -12,6 +12,7 @@ const straightLayer: LayerParams = {
   alpha: 1,
   seed: 0,
   zoom: 1,
+  visible: true,
 };
 
 const neutralNoise: NoiseFn = () => 0.5;
@@ -64,6 +65,7 @@ describe('generateLayerLines', () => {
       alpha: 1,
       seed: 0,
       zoom: 1,
+      visible: true,
     };
 
     // Deterministic, non-constant noise: the displacement genuinely varies
@@ -143,6 +145,7 @@ describe('generateLayerLines', () => {
       alpha: 1,
       seed: 0,
       zoom: 1,
+      visible: true,
     };
 
     // Deterministic noise keyed on the base point's x coordinate (which is

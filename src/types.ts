@@ -15,6 +15,7 @@ export interface LayerParams {
   alpha: number;
   seed: number;
   zoom: number;
+  visible: boolean;
 }
 
 export interface PatternState {
