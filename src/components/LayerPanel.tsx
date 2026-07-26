@@ -70,9 +70,35 @@ export function LayerPanel({
         </div>
         <ParamSlider label="Verlauf-Winkel" min={0} max={360} step={1} value={layer.gradientAngle} onChange={(v) => onUpdate({ gradientAngle: v })} />
         <ParamSlider label="Winkel" min={ANIMATABLE_RANGES.baseAngle.min} max={ANIMATABLE_RANGES.baseAngle.max} step={1} value={layer.baseAngle} onChange={(v) => onUpdate({ baseAngle: v })} />
-        <ParamSlider label="Noise-Scale" min={ANIMATABLE_RANGES.noiseScale.min} max={ANIMATABLE_RANGES.noiseScale.max} step={0.0002} value={layer.noiseScale} onChange={(v) => onUpdate({ noiseScale: v })} />
+        <ParamSlider label="Noise-Scale (Textur)" min={ANIMATABLE_RANGES.noiseScale.min} max={ANIMATABLE_RANGES.noiseScale.max} step={0.0002} value={layer.noiseScale} onChange={(v) => onUpdate({ noiseScale: v })} />
+        <ParamSlider label="Zoom (Textur)" min={ANIMATABLE_RANGES.zoom.min} max={ANIMATABLE_RANGES.zoom.max} step={1} value={layer.zoom} onChange={(v) => onUpdate({ zoom: v })} />
+
+        <div className="mb-2 flex gap-1">
+          <Button
+            size="sm"
+            variant={layer.macroShape === 'circle' ? 'default' : 'outline'}
+            onClick={() => onUpdate({ macroShape: 'circle' })}
+          >
+            Kreis
+          </Button>
+          <Button
+            size="sm"
+            variant={layer.macroShape === 'parabola' ? 'default' : 'outline'}
+            onClick={() => onUpdate({ macroShape: 'parabola' })}
+          >
+            Parabel
+          </Button>
+          <Button
+            size="sm"
+            variant={layer.macroShape === 'smooth' ? 'default' : 'outline'}
+            onClick={() => onUpdate({ macroShape: 'smooth' })}
+          >
+            Sanfte Kurve
+          </Button>
+        </div>
         <ParamSlider label="Amplitude" min={ANIMATABLE_RANGES.amplitude.min} max={ANIMATABLE_RANGES.amplitude.max} step={5} value={layer.amplitude} onChange={(v) => onUpdate({ amplitude: v })} />
-        <ParamSlider label="Zoom" min={ANIMATABLE_RANGES.zoom.min} max={ANIMATABLE_RANGES.zoom.max} step={1} value={layer.zoom} onChange={(v) => onUpdate({ zoom: v })} />
+        <ParamSlider label="Radius" min={100} max={3000} step={10} value={layer.macroRadius} onChange={(v) => onUpdate({ macroRadius: v })} />
+        <ParamSlider label="Textur-Stärke" min={0} max={200} step={5} value={layer.textureAmplitude} onChange={(v) => onUpdate({ textureAmplitude: v })} />
         <ParamSlider label="Position X" min={-500} max={500} step={10} value={layer.offsetX} onChange={(v) => onUpdate({ offsetX: v })} />
         <ParamSlider label="Position Y" min={-500} max={500} step={10} value={layer.offsetY} onChange={(v) => onUpdate({ offsetY: v })} />
         <ParamSlider label="Deckkraft" min={0} max={1} step={0.01} value={layer.alpha} onChange={(v) => onUpdate({ alpha: v })} />
@@ -112,44 +138,6 @@ export function LayerPanel({
               </>
             )}
             <WidthCurveEditor layer={layer} onUpdate={onUpdate} />
-          </>
-        )}
-
-        <div className="mb-2">
-          <Button
-            size="sm"
-            variant={layer.envelopeEnabled ? 'default' : 'outline'}
-            onClick={() => onUpdate({ envelopeEnabled: !layer.envelopeEnabled })}
-          >
-            {layer.envelopeEnabled ? 'Ausschlag-Envelope: An' : 'Ausschlag-Envelope: Aus'}
-          </Button>
-        </div>
-        {layer.envelopeEnabled && (
-          <>
-            <div className="mb-2 flex gap-1">
-              <Button
-                size="sm"
-                variant={layer.envelopeShape === 'linear' ? 'default' : 'outline'}
-                onClick={() => onUpdate({ envelopeShape: 'linear' })}
-              >
-                Linear
-              </Button>
-              <Button
-                size="sm"
-                variant={layer.envelopeShape === 'parabola' ? 'default' : 'outline'}
-                onClick={() => onUpdate({ envelopeShape: 'parabola' })}
-              >
-                Parabel
-              </Button>
-            </div>
-            <ParamSlider
-              label="Envelope-Radius"
-              min={50}
-              max={2000}
-              step={10}
-              value={layer.envelopeRadius}
-              onChange={(v) => onUpdate({ envelopeRadius: v })}
-            />
           </>
         )}
       </AccordionContent>
