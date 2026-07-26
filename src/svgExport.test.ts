@@ -4,6 +4,8 @@ import type { PatternState, Point } from './types';
 
 const state: PatternState = {
   background: '#111111',
+  animationPlaying: false,
+  animationSpeed: 1,
   layers: [
     {
       colorStart: '#ff0000',
@@ -27,6 +29,7 @@ const state: PatternState = {
       envelopeEnabled: false,
       envelopeShape: 'linear',
       envelopeRadius: 800,
+      animationPaused: false,
       widthMode: 'alongLine',
       widthCenterX: 0,
       widthCenterY: 0,
@@ -80,6 +83,8 @@ describe('buildSvgString', () => {
   it('omits polylines for a hidden layer even when stale cached layerLines contain points for it', () => {
     const hiddenState: PatternState = {
       background: '#111111',
+  animationPlaying: false,
+  animationSpeed: 1,
       layers: [
         {
           colorStart: '#ff0000',
@@ -103,6 +108,7 @@ describe('buildSvgString', () => {
           envelopeEnabled: false,
           envelopeShape: 'linear',
           envelopeRadius: 800,
+      animationPaused: false,
           widthMode: 'alongLine',
           widthCenterX: 0,
           widthCenterY: 0,
@@ -121,6 +127,8 @@ describe('buildSvgString', () => {
   it('renders a filled ribbon <path> instead of a <polyline> when widthCurveEnabled is true', () => {
     const widthState: PatternState = {
       background: '#111111',
+  animationPlaying: false,
+  animationSpeed: 1,
       layers: [
         {
           colorStart: '#ff0000',
@@ -144,6 +152,7 @@ describe('buildSvgString', () => {
           envelopeEnabled: false,
           envelopeShape: 'linear',
           envelopeRadius: 800,
+      animationPaused: false,
           widthMode: 'alongLine',
           widthCenterX: 0,
           widthCenterY: 0,
@@ -166,6 +175,8 @@ describe('buildSvgString', () => {
   it('widthMode "byPosition" makes the ribbon wide near the reference point and narrow far from it', () => {
     const byPositionState: PatternState = {
       background: '#111111',
+  animationPlaying: false,
+  animationSpeed: 1,
       layers: [
         {
           colorStart: '#ff0000',
@@ -189,6 +200,7 @@ describe('buildSvgString', () => {
           envelopeEnabled: false,
           envelopeShape: 'linear',
           envelopeRadius: 800,
+      animationPaused: false,
           widthMode: 'byPosition',
           widthCenterX: 0,
           widthCenterY: 0,

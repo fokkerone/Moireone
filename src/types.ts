@@ -31,9 +31,12 @@ export interface LayerParams {
   envelopeEnabled: boolean;
   envelopeShape: 'linear' | 'parabola';
   envelopeRadius: number;
+  animationPaused: boolean;
 }
 
 export interface PatternState {
   background: string;
   layers: LayerParams[];
+  animationPlaying: boolean;
+  animationSpeed: number;
 }

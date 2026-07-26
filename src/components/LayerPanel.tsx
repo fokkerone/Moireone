@@ -4,6 +4,7 @@ import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/
 import { ParamSlider } from './ParamSlider';
 import { WidthCurveEditor } from './WidthCurveEditor';
 import type { LayerParams } from '../types';
+import { ANIMATABLE_RANGES } from '../animation';
 
 interface LayerPanelProps {
   layer: LayerParams;
@@ -61,10 +62,10 @@ export function LayerPanel({
           />
         </div>
         <ParamSlider label="Verlauf-Winkel" min={0} max={360} step={1} value={layer.gradientAngle} onChange={(v) => onUpdate({ gradientAngle: v })} />
-        <ParamSlider label="Winkel" min={0} max={360} step={1} value={layer.baseAngle} onChange={(v) => onUpdate({ baseAngle: v })} />
-        <ParamSlider label="Noise-Scale" min={0.0002} max={0.05} step={0.0002} value={layer.noiseScale} onChange={(v) => onUpdate({ noiseScale: v })} />
-        <ParamSlider label="Amplitude" min={0} max={1400} step={5} value={layer.amplitude} onChange={(v) => onUpdate({ amplitude: v })} />
-        <ParamSlider label="Zoom" min={-50} max={50} step={1} value={layer.zoom} onChange={(v) => onUpdate({ zoom: v })} />
+        <ParamSlider label="Winkel" min={ANIMATABLE_RANGES.baseAngle.min} max={ANIMATABLE_RANGES.baseAngle.max} step={1} value={layer.baseAngle} onChange={(v) => onUpdate({ baseAngle: v })} />
+        <ParamSlider label="Noise-Scale" min={ANIMATABLE_RANGES.noiseScale.min} max={ANIMATABLE_RANGES.noiseScale.max} step={0.0002} value={layer.noiseScale} onChange={(v) => onUpdate({ noiseScale: v })} />
+        <ParamSlider label="Amplitude" min={ANIMATABLE_RANGES.amplitude.min} max={ANIMATABLE_RANGES.amplitude.max} step={5} value={layer.amplitude} onChange={(v) => onUpdate({ amplitude: v })} />
+        <ParamSlider label="Zoom" min={ANIMATABLE_RANGES.zoom.min} max={ANIMATABLE_RANGES.zoom.max} step={1} value={layer.zoom} onChange={(v) => onUpdate({ zoom: v })} />
         <ParamSlider label="Position X" min={-500} max={500} step={10} value={layer.offsetX} onChange={(v) => onUpdate({ offsetX: v })} />
         <ParamSlider label="Position Y" min={-500} max={500} step={10} value={layer.offsetY} onChange={(v) => onUpdate({ offsetY: v })} />
         <ParamSlider label="Deckkraft" min={0} max={1} step={0.01} value={layer.alpha} onChange={(v) => onUpdate({ alpha: v })} />

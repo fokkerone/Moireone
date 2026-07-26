@@ -31,6 +31,7 @@ export function createDefaultLayer(index: number): LayerParams {
     envelopeEnabled: false,
     envelopeShape: 'parabola',
     envelopeRadius: 800,
+    animationPaused: false,
   };
 }
 
@@ -38,6 +39,8 @@ export function createDefaultState(): PatternState {
   return {
     background: '#000000',
     layers: [createDefaultLayer(0), createDefaultLayer(1)],
+    animationPlaying: false,
+    animationSpeed: 1,
   };
 }
 
