@@ -50,10 +50,13 @@ export function generateLayerLines(
     const by = startY + travelY * STEP_LENGTH * s;
     baseXs[s] = bx;
     baseYs[s] = by;
-    const t = s / (numSteps - 1 || 1);
-    const envelopeFactor = layer.envelopeEnabled
-      ? widthAt(t, layer.envelopeShape, 0, 1)
-      : 1;
+    let envelopeFactor = 1;
+    if (layer.envelopeEnabled) {
+      const distanceFromCenter = Math.abs(s * STEP_LENGTH - diagonal);
+      const normalizedDistance = Math.min(1, distanceFromCenter / layer.envelopeRadius);
+      const envelopeT = 0.5 + normalizedDistance * 0.5;
+      envelopeFactor = widthAt(envelopeT, layer.envelopeShape, 0, 1);
+    }
     displacements[s] = lineOffset(layer, bx, by, noise) * envelopeFactor;
   }
 

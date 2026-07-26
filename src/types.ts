@@ -30,6 +30,7 @@ export interface LayerParams {
   widthRadius: number;
   envelopeEnabled: boolean;
   envelopeShape: 'linear' | 'parabola';
+  envelopeRadius: number;
 }
 
 export interface PatternState {

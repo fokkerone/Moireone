@@ -30,6 +30,7 @@ export function createDefaultLayer(index: number): LayerParams {
     widthRadius: 400,
     envelopeEnabled: false,
     envelopeShape: 'parabola',
+    envelopeRadius: 800,
   };
 }
 

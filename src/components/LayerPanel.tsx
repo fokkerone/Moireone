@@ -117,22 +117,32 @@ export function LayerPanel({
           </Button>
         </div>
         {layer.envelopeEnabled && (
-          <div className="mb-2 flex gap-1">
-            <Button
-              size="sm"
-              variant={layer.envelopeShape === 'linear' ? 'default' : 'outline'}
-              onClick={() => onUpdate({ envelopeShape: 'linear' })}
-            >
-              Linear
-            </Button>
-            <Button
-              size="sm"
-              variant={layer.envelopeShape === 'parabola' ? 'default' : 'outline'}
-              onClick={() => onUpdate({ envelopeShape: 'parabola' })}
-            >
-              Parabel
-            </Button>
-          </div>
+          <>
+            <div className="mb-2 flex gap-1">
+              <Button
+                size="sm"
+                variant={layer.envelopeShape === 'linear' ? 'default' : 'outline'}
+                onClick={() => onUpdate({ envelopeShape: 'linear' })}
+              >
+                Linear
+              </Button>
+              <Button
+                size="sm"
+                variant={layer.envelopeShape === 'parabola' ? 'default' : 'outline'}
+                onClick={() => onUpdate({ envelopeShape: 'parabola' })}
+              >
+                Parabel
+              </Button>
+            </div>
+            <ParamSlider
+              label="Envelope-Radius"
+              min={50}
+              max={2000}
+              step={10}
+              value={layer.envelopeRadius}
+              onChange={(v) => onUpdate({ envelopeRadius: v })}
+            />
+          </>
         )}
       </AccordionContent>
     </AccordionItem>

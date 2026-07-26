@@ -21,6 +21,7 @@ const baseLayer: LayerParams = {
   widthMax: 1,
   envelopeEnabled: false,
   envelopeShape: 'linear',
+  envelopeRadius: 800,
   widthMode: 'alongLine',
   widthCenterX: 0,
   widthCenterY: 0,
