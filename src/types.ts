@@ -28,9 +28,9 @@ export interface LayerParams {
   widthCenterX: number;
   widthCenterY: number;
   widthRadius: number;
-  envelopeEnabled: boolean;
-  envelopeShape: 'linear' | 'parabola';
-  envelopeRadius: number;
+  macroShape: 'circle' | 'parabola' | 'smooth';
+  macroRadius: number;
+  textureAmplitude: number;
   animationPaused: boolean;
 }
 

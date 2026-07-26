@@ -28,9 +28,9 @@ export function createDefaultLayer(index: number): LayerParams {
     widthCenterX: 0,
     widthCenterY: 0,
     widthRadius: 400,
-    envelopeEnabled: false,
-    envelopeShape: 'parabola',
-    envelopeRadius: 800,
+    macroShape: 'smooth',
+    macroRadius: 800,
+    textureAmplitude: 0,
     animationPaused: false,
   };
 }

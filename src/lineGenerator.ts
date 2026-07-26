@@ -1,6 +1,5 @@
 import type { LayerParams, NoiseFn, Point } from './types';
-import { lineOffset } from './flowfield';
-import { widthAt } from './widthProfile';
+import { macroShapeOffset } from './macroShape';
 
 const STEP_LENGTH = 4;
 
@@ -45,19 +44,19 @@ export function generateLayerLines(
   const baseXs = new Array<number>(numSteps);
   const baseYs = new Array<number>(numSteps);
   const displacements = new Array<number>(numSteps);
+  const safeZoom = layer.zoom === 0 ? 1 : layer.zoom;
+  const effectiveNoiseScale = layer.noiseScale / safeZoom;
   for (let s = 0; s < numSteps; s++) {
     const bx = startX + travelX * STEP_LENGTH * s;
     const by = startY + travelY * STEP_LENGTH * s;
     baseXs[s] = bx;
     baseYs[s] = by;
-    let envelopeFactor = 1;
-    if (layer.envelopeEnabled) {
-      const distanceFromCenter = Math.abs(s * STEP_LENGTH - diagonal);
-      const normalizedDistance = Math.min(1, distanceFromCenter / layer.envelopeRadius);
-      const envelopeT = 0.5 + normalizedDistance * 0.5;
-      envelopeFactor = widthAt(envelopeT, layer.envelopeShape, 0, 1);
-    }
-    displacements[s] = lineOffset(layer, bx, by, noise) * envelopeFactor;
+    const distanceFromCenter = Math.abs(s * STEP_LENGTH - diagonal);
+    const macroOffset = macroShapeOffset(layer.macroShape, distanceFromCenter, layer.macroRadius, layer.amplitude);
+    const textureOffset = layer.textureAmplitude > 0
+      ? layer.textureAmplitude * (noise(bx * effectiveNoiseScale, by * effectiveNoiseScale, layer.seed) - 0.5) * 2
+      : 0;
+    displacements[s] = macroOffset + textureOffset;
   }
 
   const halfCount = Math.ceil(diagonal / layer.spacing / 2);
