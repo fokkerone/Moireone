@@ -78,7 +78,34 @@ export function LayerPanel({
             {layer.widthCurveEnabled ? 'Linienbreite: Eigene Kurve' : 'Linienbreite: Global'}
           </Button>
         </div>
-        {layer.widthCurveEnabled && <WidthCurveEditor layer={layer} onUpdate={onUpdate} />}
+        {layer.widthCurveEnabled && (
+          <>
+            <div className="mb-2 flex gap-1">
+              <Button
+                size="sm"
+                variant={layer.widthMode === 'alongLine' ? 'default' : 'outline'}
+                onClick={() => onUpdate({ widthMode: 'alongLine' })}
+              >
+                Entlang der Linie
+              </Button>
+              <Button
+                size="sm"
+                variant={layer.widthMode === 'byPosition' ? 'default' : 'outline'}
+                onClick={() => onUpdate({ widthMode: 'byPosition' })}
+              >
+                Nach Position
+              </Button>
+            </div>
+            {layer.widthMode === 'byPosition' && (
+              <>
+                <ParamSlider label="Dicke-Zentrum X" min={-500} max={500} step={10} value={layer.widthCenterX} onChange={(v) => onUpdate({ widthCenterX: v })} />
+                <ParamSlider label="Dicke-Zentrum Y" min={-500} max={500} step={10} value={layer.widthCenterY} onChange={(v) => onUpdate({ widthCenterY: v })} />
+                <ParamSlider label="Dicke-Radius" min={50} max={1000} step={10} value={layer.widthRadius} onChange={(v) => onUpdate({ widthRadius: v })} />
+              </>
+            )}
+            <WidthCurveEditor layer={layer} onUpdate={onUpdate} />
+          </>
+        )}
 
         <div className="mb-2">
           <Button

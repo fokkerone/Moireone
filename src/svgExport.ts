@@ -43,9 +43,19 @@ export function buildSvgString(
     const lines = layerLines[layerIndex] ?? [];
     for (const line of lines) {
       if (layer.widthCurveEnabled) {
-        const widths = line.map((_, i) =>
-          widthAt(i / (line.length - 1 || 1), layer.widthCurveShape, layer.widthMin, layer.widthMax)
-        );
+        const widths = line.map((point, i) => {
+          if (layer.widthMode === 'byPosition') {
+            const centerX = width / 2 + layer.widthCenterX;
+            const centerY = height / 2 + layer.widthCenterY;
+            const dx = point.x - centerX;
+            const dy = point.y - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const normalizedDistance = Math.min(1, distance / layer.widthRadius);
+            const t = 0.5 + normalizedDistance * 0.5;
+            return widthAt(t, layer.widthCurveShape, layer.widthMin, layer.widthMax);
+          }
+          return widthAt(i / (line.length - 1 || 1), layer.widthCurveShape, layer.widthMin, layer.widthMax);
+        });
         const ribbon = buildRibbon(line, widths);
         const d = ribbon
           .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(2)},${p.y.toFixed(2)}`)

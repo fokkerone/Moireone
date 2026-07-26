@@ -24,6 +24,10 @@ export interface LayerParams {
   widthCurveShape: 'linear' | 'parabola';
   widthMin: number;
   widthMax: number;
+  widthMode: 'alongLine' | 'byPosition';
+  widthCenterX: number;
+  widthCenterY: number;
+  widthRadius: number;
   envelopeEnabled: boolean;
   envelopeShape: 'linear' | 'parabola';
 }

@@ -21,6 +21,10 @@ const straightLayer: LayerParams = {
   widthMax: 1,
   envelopeEnabled: false,
   envelopeShape: 'linear',
+  widthMode: 'alongLine',
+  widthCenterX: 0,
+  widthCenterY: 0,
+  widthRadius: 400,
 };
 
 const neutralNoise: NoiseFn = () => 0.5;
@@ -82,6 +86,10 @@ describe('generateLayerLines', () => {
       widthMax: 1,
       envelopeEnabled: false,
       envelopeShape: 'linear',
+      widthMode: 'alongLine',
+      widthCenterX: 0,
+      widthCenterY: 0,
+      widthRadius: 400,
     };
 
     // Deterministic, non-constant noise: the displacement genuinely varies
@@ -164,6 +172,10 @@ describe('generateLayerLines', () => {
       widthMax: 1,
       envelopeEnabled: false,
       envelopeShape: 'linear',
+      widthMode: 'alongLine',
+      widthCenterX: 0,
+      widthCenterY: 0,
+      widthRadius: 400,
     };
     const offsetLayer: LayerParams = { ...baseLayer, offsetX: 50, offsetY: 30 };
 
@@ -233,6 +245,10 @@ describe('generateLayerLines', () => {
       widthMax: 1,
       envelopeEnabled: false,
       envelopeShape: 'linear',
+      widthMode: 'alongLine',
+      widthCenterX: 0,
+      widthCenterY: 0,
+      widthRadius: 400,
     };
 
     // Deterministic noise keyed on the base point's x coordinate (which is
@@ -334,6 +350,10 @@ describe('generateLayerLines', () => {
       widthMax: 1,
       envelopeEnabled,
       envelopeShape: 'parabola',
+      widthMode: 'alongLine',
+      widthCenterX: 0,
+      widthCenterY: 0,
+      widthRadius: 400,
     };
   }
 
@@ -399,6 +419,10 @@ describe('generateLayerLines', () => {
       widthMax: 1,
       envelopeEnabled: true,
       envelopeShape: 'parabola',
+      widthMode: 'alongLine',
+      widthCenterX: 0,
+      widthCenterY: 0,
+      widthRadius: 400,
     };
 
     // Same style of deterministic, non-constant noise as the parallelism

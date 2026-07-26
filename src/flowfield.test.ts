@@ -21,6 +21,10 @@ const baseLayer: LayerParams = {
   widthMax: 1,
   envelopeEnabled: false,
   envelopeShape: 'linear',
+  widthMode: 'alongLine',
+  widthCenterX: 0,
+  widthCenterY: 0,
+  widthRadius: 400,
 };
 
 describe('lineOffset', () => {

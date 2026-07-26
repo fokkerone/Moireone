@@ -24,6 +24,10 @@ export function createDefaultLayer(index: number): LayerParams {
     widthCurveShape: 'linear',
     widthMin: 1,
     widthMax: 4,
+    widthMode: 'alongLine',
+    widthCenterX: 0,
+    widthCenterY: 0,
+    widthRadius: 400,
     envelopeEnabled: false,
     envelopeShape: 'parabola',
   };
