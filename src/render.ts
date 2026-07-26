@@ -1,16 +1,16 @@
 import type p5 from 'p5';
-import type { PatternState, Point } from './types';
+import type { ColorStop, PatternState, Point } from './types';
 import { generateLayerLines } from './lineGenerator';
 import { widthAt } from './widthProfile';
 import { buildRibbon } from './ribbon';
+import { sortStops } from './colorStops';
 
 function buildGradient(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
   angleDegrees: number,
-  colorStart: string,
-  colorEnd: string
+  stops: ColorStop[]
 ): CanvasGradient {
   const angleRad = (angleDegrees * Math.PI) / 180;
   const diagonal = Math.sqrt(width * width + height * height);
@@ -25,8 +25,9 @@ function buildGradient(
     centerX + dx * half,
     centerY + dy * half
   );
-  gradient.addColorStop(0, colorStart);
-  gradient.addColorStop(1, colorEnd);
+  for (const stop of sortStops(stops)) {
+    gradient.addColorStop(stop.position, stop.color);
+  }
   return gradient;
 }
 
@@ -42,13 +43,16 @@ export function renderPattern(p: p5, state: PatternState): Point[][][] {
       layerLines.push(lines);
 
       const ctx = p.drawingContext as CanvasRenderingContext2D;
-      const gradient = buildGradient(ctx, p.width, p.height, layer.gradientAngle, layer.colorStart, layer.colorEnd);
       (p.drawingContext as CanvasRenderingContext2D).globalAlpha = layer.alpha;
 
       if (layer.widthCurveEnabled) {
         p.noStroke();
         p.fill(255);
-        ctx.fillStyle = gradient;
+        if (layer.fillMode === 'solid') {
+          ctx.fillStyle = layer.solidColor;
+        } else {
+          ctx.fillStyle = buildGradient(ctx, p.width, p.height, layer.gradientAngle, layer.colorStops);
+        }
 
         for (const line of lines) {
           const widths = line.map((point, i) => {
@@ -73,7 +77,11 @@ export function renderPattern(p: p5, state: PatternState): Point[][][] {
         }
       } else {
         p.stroke(0);
-        ctx.strokeStyle = gradient;
+        if (layer.fillMode === 'solid') {
+          ctx.strokeStyle = layer.solidColor;
+        } else {
+          ctx.strokeStyle = buildGradient(ctx, p.width, p.height, layer.gradientAngle, layer.colorStops);
+        }
         p.strokeWeight(layer.weight);
         p.noFill();
 

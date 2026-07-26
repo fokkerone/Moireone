@@ -5,9 +5,16 @@ export interface Point {
 
 export type NoiseFn = (x: number, y: number, z: number) => number;
 
+export interface ColorStop {
+  id: string;
+  position: number; // 0 to 1
+  color: string;
+}
+
 export interface LayerParams {
-  colorStart: string;
-  colorEnd: string;
+  fillMode: 'solid' | 'gradient';
+  solidColor: string;
+  colorStops: ColorStop[];
   gradientAngle: number;
   baseAngle: number;
   noiseScale: number;

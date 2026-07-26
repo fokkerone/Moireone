@@ -1,14 +1,14 @@
-import type { PatternState, Point } from './types';
+import type { ColorStop, PatternState, Point } from './types';
 import { widthAt } from './widthProfile';
 import { buildRibbon } from './ribbon';
+import { sortStops } from './colorStops';
 
 function buildGradientDef(
   layerIndex: number,
   width: number,
   height: number,
   angleDegrees: number,
-  colorStart: string,
-  colorEnd: string
+  stops: ColorStop[]
 ): string {
   const angleRad = (angleDegrees * Math.PI) / 180;
   const diagonal = Math.sqrt(width * width + height * height);
@@ -22,7 +22,11 @@ function buildGradientDef(
   const x2 = centerX + dx * half;
   const y2 = centerY + dy * half;
 
-  return `<linearGradient id="layer-gradient-${layerIndex}" gradientUnits="userSpaceOnUse" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"><stop offset="0%" stop-color="${colorStart}" /><stop offset="100%" stop-color="${colorEnd}" /></linearGradient>`;
+  const stopEls = sortStops(stops)
+    .map((stop) => `<stop offset="${stop.position * 100}%" stop-color="${stop.color}" />`)
+    .join('');
+
+  return `<linearGradient id="layer-gradient-${layerIndex}" gradientUnits="userSpaceOnUse" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}">${stopEls}</linearGradient>`;
 }
 
 export function buildSvgString(
@@ -37,9 +41,12 @@ export function buildSvgString(
   const polylines: string[] = [];
   state.layers.forEach((layer, layerIndex) => {
     if (!layer.visible) return;
-    gradientDefs.push(
-      buildGradientDef(layerIndex, width, height, layer.gradientAngle, layer.colorStart, layer.colorEnd)
-    );
+    if (layer.fillMode === 'gradient') {
+      gradientDefs.push(
+        buildGradientDef(layerIndex, width, height, layer.gradientAngle, layer.colorStops)
+      );
+    }
+    const paint = layer.fillMode === 'solid' ? layer.solidColor : `url(#layer-gradient-${layerIndex})`;
     const lines = layerLines[layerIndex] ?? [];
     for (const line of lines) {
       if (layer.widthCurveEnabled) {
@@ -61,12 +68,12 @@ export function buildSvgString(
           .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(2)},${p.y.toFixed(2)}`)
           .join(' ') + ' Z';
         polylines.push(
-          `<path d="${d}" fill="url(#layer-gradient-${layerIndex})" fill-opacity="${layer.alpha}" stroke="none" />`
+          `<path d="${d}" fill="${paint}" fill-opacity="${layer.alpha}" stroke="none" />`
         );
       } else {
         const points = line.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
         polylines.push(
-          `<polyline points="${points}" fill="none" stroke="url(#layer-gradient-${layerIndex})" stroke-opacity="${layer.alpha}" stroke-width="${layer.weight}" stroke-linecap="butt" />`
+          `<polyline points="${points}" fill="none" stroke="${paint}" stroke-opacity="${layer.alpha}" stroke-width="${layer.weight}" stroke-linecap="butt" />`
         );
       }
     }

@@ -8,8 +8,12 @@ const state: PatternState = {
   animationSpeed: 1,
   layers: [
     {
-      colorStart: '#ff0000',
-      colorEnd: '#0000ff',
+      fillMode: 'gradient',
+      solidColor: '#ff0000',
+      colorStops: [
+        { id: 'a', position: 0, color: '#ff0000' },
+        { id: 'b', position: 1, color: '#0000ff' },
+      ],
       gradientAngle: 45,
       baseAngle: 0,
       noiseScale: 0.01,
@@ -87,8 +91,12 @@ describe('buildSvgString', () => {
   animationSpeed: 1,
       layers: [
         {
-          colorStart: '#ff0000',
-          colorEnd: '#0000ff',
+          fillMode: 'gradient',
+          solidColor: '#ff0000',
+          colorStops: [
+            { id: 'a', position: 0, color: '#ff0000' },
+            { id: 'b', position: 1, color: '#0000ff' },
+          ],
           gradientAngle: 45,
           baseAngle: 0,
           noiseScale: 0.01,
@@ -131,8 +139,12 @@ describe('buildSvgString', () => {
   animationSpeed: 1,
       layers: [
         {
-          colorStart: '#ff0000',
-          colorEnd: '#0000ff',
+          fillMode: 'gradient',
+          solidColor: '#ff0000',
+          colorStops: [
+            { id: 'a', position: 0, color: '#ff0000' },
+            { id: 'b', position: 1, color: '#0000ff' },
+          ],
           gradientAngle: 45,
           baseAngle: 0,
           noiseScale: 0.01,
@@ -179,8 +191,12 @@ describe('buildSvgString', () => {
   animationSpeed: 1,
       layers: [
         {
-          colorStart: '#ff0000',
-          colorEnd: '#0000ff',
+          fillMode: 'gradient',
+          solidColor: '#ff0000',
+          colorStops: [
+            { id: 'a', position: 0, color: '#ff0000' },
+            { id: 'b', position: 1, color: '#0000ff' },
+          ],
           gradientAngle: 45,
           baseAngle: 0,
           noiseScale: 0.01,
@@ -261,5 +277,110 @@ describe('buildSvgString', () => {
     // increases, with no per-line end-tapering (unlike 'alongLine' mode).
     expect(widthAt100).toBeGreaterThan(widthAt150);
     expect(widthAt150).toBeGreaterThan(widthAt200);
+  });
+
+  it('renders a solid-fill layer with the flat color and no linearGradient element', () => {
+    const solidState: PatternState = {
+      background: '#111111',
+      animationPlaying: false,
+      animationSpeed: 1,
+      layers: [
+        {
+          fillMode: 'solid',
+          solidColor: '#abcdef',
+          colorStops: [
+            { id: 'a', position: 0, color: '#ff0000' },
+            { id: 'b', position: 1, color: '#0000ff' },
+          ],
+          gradientAngle: 45,
+          baseAngle: 0,
+          noiseScale: 0.01,
+          amplitude: 50,
+          spacing: 10,
+          weight: 2,
+          alpha: 0.5,
+          seed: 0,
+          zoom: 1,
+          visible: true,
+          offsetX: 0,
+          offsetY: 0,
+          widthCurveEnabled: false,
+          widthCurveShape: 'linear',
+          widthMin: 1,
+          widthMax: 1,
+          macroShape: 'smooth',
+          macroRadius: 800,
+          textureAmplitude: 0,
+          animationPaused: false,
+          widthMode: 'alongLine',
+          widthCenterX: 0,
+          widthCenterY: 0,
+          widthRadius: 400,
+        },
+      ],
+    };
+    const line: Point[] = [
+      { x: 0, y: 0 },
+      { x: 10, y: 10 },
+    ];
+    const svg = buildSvgString(solidState, [[line]], 300, 200);
+    expect(svg).toContain('stroke="#abcdef"');
+    expect(svg).not.toContain('<linearGradient');
+  });
+
+  it('renders a gradient with three color stops, one <stop> per entry at the correct offsets', () => {
+    const threeStopState: PatternState = {
+      background: '#111111',
+      animationPlaying: false,
+      animationSpeed: 1,
+      layers: [
+        {
+          fillMode: 'gradient',
+          solidColor: '#ff0000',
+          colorStops: [
+            { id: 'a', position: 0, color: '#ff0000' },
+            { id: 'b', position: 0.5, color: '#00ff00' },
+            { id: 'c', position: 1, color: '#0000ff' },
+          ],
+          gradientAngle: 45,
+          baseAngle: 0,
+          noiseScale: 0.01,
+          amplitude: 50,
+          spacing: 10,
+          weight: 2,
+          alpha: 0.5,
+          seed: 0,
+          zoom: 1,
+          visible: true,
+          offsetX: 0,
+          offsetY: 0,
+          widthCurveEnabled: false,
+          widthCurveShape: 'linear',
+          widthMin: 1,
+          widthMax: 1,
+          macroShape: 'smooth',
+          macroRadius: 800,
+          textureAmplitude: 0,
+          animationPaused: false,
+          widthMode: 'alongLine',
+          widthCenterX: 0,
+          widthCenterY: 0,
+          widthRadius: 400,
+        },
+      ],
+    };
+    const line: Point[] = [
+      { x: 0, y: 0 },
+      { x: 10, y: 10 },
+    ];
+    const svg = buildSvgString(threeStopState, [[line]], 300, 200);
+    const stopMatches = [...svg.matchAll(/<stop offset="([^"]+)" stop-color="([^"]+)" \/>/g)];
+    expect(stopMatches).toHaveLength(3);
+    expect(stopMatches[0][1]).toBe('0%');
+    expect(stopMatches[0][2]).toBe('#ff0000');
+    expect(stopMatches[1][1]).toBe('50%');
+    expect(stopMatches[1][2]).toBe('#00ff00');
+    expect(stopMatches[2][1]).toBe('100%');
+    expect(stopMatches[2][2]).toBe('#0000ff');
   });
 });

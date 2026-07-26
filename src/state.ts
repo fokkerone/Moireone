@@ -6,8 +6,12 @@ export const MAX_LAYERS = 5;
 
 export function createDefaultLayer(index: number): LayerParams {
   return {
-    colorStart: getDefaultLayerColor(index),
-    colorEnd: getDefaultLayerColorEnd(index),
+    fillMode: 'gradient',
+    solidColor: getDefaultLayerColor(index),
+    colorStops: [
+      { id: `${index}-stop-0`, position: 0, color: getDefaultLayerColor(index) },
+      { id: `${index}-stop-1`, position: 1, color: getDefaultLayerColorEnd(index) },
+    ],
     gradientAngle: 90,
     baseAngle: (index * 25) % 360,
     noiseScale: 0.001,

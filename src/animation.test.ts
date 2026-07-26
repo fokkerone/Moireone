@@ -4,8 +4,12 @@ import type { LayerParams } from './types';
 
 function makeLayer(overrides: Partial<LayerParams> = {}): LayerParams {
   return {
-    colorStart: '#ffffff',
-    colorEnd: '#000000',
+    fillMode: 'gradient',
+    solidColor: '#000000',
+    colorStops: [
+      { id: 's0', position: 0, color: '#000000' },
+      { id: 's1', position: 1, color: '#ffffff' },
+    ],
     gradientAngle: 90,
     baseAngle: 0,
     noiseScale: 0.001,
