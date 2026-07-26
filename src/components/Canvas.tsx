@@ -31,16 +31,6 @@ export function Canvas({ state, onCachedLinesChange }: CanvasProps) {
     // `containerRef.current` lookup inside the cleanup a silent no-op.
     const container = containerRef.current;
 
-    // Browser page-zoom (Cmd/Ctrl +/-) fires a `resize` event too, since it
-    // changes the CSS-pixel size of the viewport. Without this guard, that
-    // event would trigger `resizeCanvas`, regenerating the whole pattern at
-    // the new pixel dimensions — visually different from the sidebar, which
-    // just optically scales with the rest of the page like any other DOM
-    // content. A real window resize leaves `devicePixelRatio` unchanged;
-    // zooming changes it. Skipping `resizeCanvas` when it changed lets the
-    // canvas raster zoom optically in lockstep with everything else instead.
-    let lastDevicePixelRatio = window.devicePixelRatio;
-
     const sketch = (p: p5) => {
       p.setup = () => {
         if (disposed) return;
@@ -56,10 +46,6 @@ export function Canvas({ state, onCachedLinesChange }: CanvasProps) {
 
       p.windowResized = () => {
         if (disposed) return;
-        const currentDevicePixelRatio = window.devicePixelRatio;
-        const isZoomChange = currentDevicePixelRatio !== lastDevicePixelRatio;
-        lastDevicePixelRatio = currentDevicePixelRatio;
-        if (isZoomChange) return;
         p.resizeCanvas(p.windowWidth, p.windowHeight);
         p.redraw();
       };
