@@ -16,6 +16,14 @@ function generateStopId(): string {
 export function ColorStopsEditor({ layer, onUpdate }: ColorStopsEditorProps) {
   const barRef = useRef<HTMLDivElement>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  // Tracks whether the pointer actually MOVED during the current gesture.
+  // Native `click` events use ordinary hit-testing at release time, not
+  // pointer-capture retargeting, so a real drag that ends a pixel or two off
+  // the thin marker strip can still land on the bar and fire its `onClick`.
+  // Suppressing that click by target alone (marker vs. bar) isn't enough;
+  // this flag suppresses it based on gesture history instead, regardless of
+  // where the pointer happens to end up.
+  const didDragRef = useRef(false);
 
   const stops = sortStops(layer.colorStops);
   const gradientCss = `linear-gradient(to right, ${stops
@@ -29,13 +37,17 @@ export function ColorStopsEditor({ layer, onUpdate }: ColorStopsEditorProps) {
   }
 
   function handleBarClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (draggingId) return;
+    if (didDragRef.current) {
+      didDragRef.current = false;
+      return;
+    }
     const position = positionFromClientX(e.clientX);
     onUpdate({ colorStops: addStop(layer.colorStops, generateStopId(), position, '#ffffff') });
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
     if (!draggingId) return;
+    didDragRef.current = true;
     const position = positionFromClientX(e.clientX);
     onUpdate({ colorStops: updateStop(layer.colorStops, draggingId, { position }) });
   }
