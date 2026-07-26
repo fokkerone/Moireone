@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ParamSlider } from './ParamSlider';
 import { WidthCurveEditor } from './WidthCurveEditor';
+import { ColorStopsEditor } from './ColorStopsEditor';
 import type { LayerParams } from '../types';
 import { ANIMATABLE_RANGES } from '../animation';
 
@@ -52,23 +53,32 @@ export function LayerPanel({
         </Button>
       </div>
       <AccordionContent>
-        <div className="mb-2 flex items-center gap-2">
-          <label className="w-32 shrink-0 text-xs">Startfarbe</label>
-          <input
-            type="color"
-            value={layer.colorStart}
-            onChange={(e) => onUpdate({ colorStart: e.target.value })}
-            className="h-8 w-16 rounded border"
-          />
-          <label className="shrink-0 text-xs">Endfarbe</label>
-          <input
-            type="color"
-            value={layer.colorEnd}
-            onChange={(e) => onUpdate({ colorEnd: e.target.value })}
-            className="h-8 w-16 rounded border"
-          />
+        <div className="mb-2">
+          <Button
+            size="sm"
+            variant={layer.fillMode === 'gradient' ? 'default' : 'outline'}
+            onClick={() => onUpdate({ fillMode: layer.fillMode === 'solid' ? 'gradient' : 'solid' })}
+          >
+            {layer.fillMode === 'solid' ? 'Füllung: Vollton' : 'Füllung: Verlauf'}
+          </Button>
         </div>
-        <ParamSlider label="Verlauf-Winkel" min={0} max={360} step={1} value={layer.gradientAngle} onChange={(v) => onUpdate({ gradientAngle: v })} />
+        {layer.fillMode === 'solid' && (
+          <div className="mb-2 flex items-center gap-2">
+            <label className="w-32 shrink-0 text-xs">Farbe</label>
+            <input
+              type="color"
+              value={layer.solidColor}
+              onChange={(e) => onUpdate({ solidColor: e.target.value })}
+              className="h-8 w-16 rounded border"
+            />
+          </div>
+        )}
+        {layer.fillMode === 'gradient' && (
+          <>
+            <ColorStopsEditor layer={layer} onUpdate={onUpdate} />
+            <ParamSlider label="Verlauf-Winkel" min={0} max={360} step={1} value={layer.gradientAngle} onChange={(v) => onUpdate({ gradientAngle: v })} />
+          </>
+        )}
         <ParamSlider label="Winkel" min={ANIMATABLE_RANGES.baseAngle.min} max={ANIMATABLE_RANGES.baseAngle.max} step={1} value={layer.baseAngle} onChange={(v) => onUpdate({ baseAngle: v })} />
         <ParamSlider label="Noise-Scale (Textur)" min={ANIMATABLE_RANGES.noiseScale.min} max={ANIMATABLE_RANGES.noiseScale.max} step={0.0002} value={layer.noiseScale} onChange={(v) => onUpdate({ noiseScale: v })} />
         <ParamSlider label="Zoom (Textur)" min={ANIMATABLE_RANGES.zoom.min} max={ANIMATABLE_RANGES.zoom.max} step={1} value={layer.zoom} onChange={(v) => onUpdate({ zoom: v })} />
