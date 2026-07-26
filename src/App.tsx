@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Canvas } from './components/Canvas';
 import { Sidebar } from './components/Sidebar';
+import { ZoomControls } from './components/ZoomControls';
 import { computeAnimatedValues } from './animation';
 import {
   createDefaultState,
@@ -15,6 +16,7 @@ import type { LayerParams, Point } from './types';
 
 export function App() {
   const [state, setState] = useState(createDefaultState());
+  const [viewZoom, setViewZoom] = useState(1);
   const cachedLinesRef = useRef<Point[][][]>([]);
   const elapsedRef = useRef<number[]>([]);
   const lastFrameTimeRef = useRef<number | null>(null);
@@ -87,10 +89,12 @@ export function App() {
     <>
       <Canvas
         state={state}
+        zoom={viewZoom}
         onCachedLinesChange={(lines) => {
           cachedLinesRef.current = lines;
         }}
       />
+      <ZoomControls zoom={viewZoom} onZoomChange={setViewZoom} />
       <Sidebar
         state={state}
         onBackgroundChange={(color) => setState((prev) => ({ ...prev, background: color }))}

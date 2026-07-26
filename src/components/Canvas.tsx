@@ -6,9 +6,10 @@ import { renderPattern } from '../render';
 interface CanvasProps {
   state: PatternState;
   onCachedLinesChange: (lines: Point[][][]) => void;
+  zoom: number;
 }
 
-export function Canvas({ state, onCachedLinesChange }: CanvasProps) {
+export function Canvas({ state, onCachedLinesChange, zoom }: CanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const stateRef = useRef<PatternState>(state);
   const p5Ref = useRef<p5 | null>(null);
@@ -79,5 +80,13 @@ export function Canvas({ state, onCachedLinesChange }: CanvasProps) {
     };
   }, []);
 
-  return <div ref={containerRef} className="fixed inset-0" />;
+  return (
+    <div className="fixed inset-0 overflow-hidden">
+      <div
+        ref={containerRef}
+        className="h-full w-full"
+        style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}
+      />
+    </div>
+  );
 }
