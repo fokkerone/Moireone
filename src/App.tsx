@@ -18,6 +18,12 @@ export function App() {
   const cachedLinesRef = useRef<Point[][][]>([]);
   const elapsedRef = useRef<number[]>([]);
   const lastFrameTimeRef = useRef<number | null>(null);
+  const lastSeedsRef = useRef<number[]>([]);
+  const stateRef = useRef(state);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   function updateLayer(index: number, patch: Partial<LayerParams>) {
     setState((prev) => ({
@@ -42,29 +48,29 @@ export function App() {
       const deltaMs = lastTime === null ? 0 : timestamp - lastTime;
       lastFrameTimeRef.current = timestamp;
 
-      setState((prev) => {
-        const elapsed = elapsedRef.current;
-        if (elapsed.length !== prev.layers.length) {
-          elapsed.length = prev.layers.length;
-          for (let i = 0; i < elapsed.length; i++) {
-            if (elapsed[i] === undefined) {
-              elapsed[i] = 0;
-            }
-          }
-        }
+      const currentLayers = stateRef.current.layers;
+      const currentSeeds = currentLayers.map((layer) => layer.seed);
+      const structuralChange =
+        currentSeeds.length !== lastSeedsRef.current.length ||
+        currentSeeds.some((seed, i) => seed !== lastSeedsRef.current[i]);
 
-        return {
-          ...prev,
-          layers: prev.layers.map((layer, i) => {
-            if (layer.animationPaused) {
-              return layer;
-            }
-            elapsed[i] += deltaMs * prev.animationSpeed;
-            const animated = computeAnimatedValues(layer, elapsed[i], 1);
-            return { ...layer, ...animated };
-          }),
-        };
+      if (structuralChange) {
+        elapsedRef.current = new Array(currentSeeds.length).fill(0);
+      }
+      lastSeedsRef.current = currentSeeds;
+
+      const elapsed = elapsedRef.current;
+      const speed = stateRef.current.animationSpeed;
+      const newLayers = currentLayers.map((layer, i) => {
+        if (layer.animationPaused) {
+          return layer;
+        }
+        elapsed[i] += deltaMs * speed;
+        const animated = computeAnimatedValues(layer, elapsed[i], 1);
+        return { ...layer, ...animated };
       });
+
+      setState((prev) => ({ ...prev, layers: newLayers }));
 
       frameId = requestAnimationFrame(tick);
     };
