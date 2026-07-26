@@ -13,6 +13,8 @@ interface SidebarProps {
   onRemoveLayer: (index: number) => void;
   onReorderLayers: (fromIndex: number, toIndex: number) => void;
   onExport: () => void;
+  onToggleAnimationPlaying: () => void;
+  onAnimationSpeedChange: (speed: number) => void;
 }
 
 export function Sidebar({
@@ -25,6 +27,8 @@ export function Sidebar({
   onRemoveLayer,
   onReorderLayers,
   onExport,
+  onToggleAnimationPlaying,
+  onAnimationSpeedChange,
 }: SidebarProps) {
   const spacing = state.layers[0]?.spacing ?? 14;
   const weight = state.layers[0]?.weight ?? 1.5;
@@ -42,6 +46,21 @@ export function Sidebar({
       </div>
       <ParamSlider label="Abstand" min={4} max={50} step={1} value={spacing} onChange={onGlobalSpacingChange} />
       <ParamSlider label="Linienbreite" min={0.5} max={50} step={0.5} value={weight} onChange={onGlobalWeightChange} />
+      <Button
+        variant={state.animationPlaying ? 'default' : 'outline'}
+        className="mb-2 w-full"
+        onClick={onToggleAnimationPlaying}
+      >
+        {state.animationPlaying ? 'Animation: Stop' : 'Animation: Play'}
+      </Button>
+      <ParamSlider
+        label="Animationsgeschwindigkeit"
+        min={0.1}
+        max={5}
+        step={0.1}
+        value={state.animationSpeed}
+        onChange={onAnimationSpeedChange}
+      />
       <Button className="mb-3 w-full" onClick={onExport}>
         Als SVG exportieren
       </Button>

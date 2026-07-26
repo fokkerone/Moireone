@@ -1,4 +1,4 @@
-import { GripVertical, Copy, Trash2, Eye, EyeOff } from 'lucide-react';
+import { GripVertical, Copy, Trash2, Eye, EyeOff, Pause, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ParamSlider } from './ParamSlider';
@@ -36,6 +36,13 @@ export function LayerPanel({
         <AccordionTrigger className="flex-1">{`Layer ${index + 1}`}</AccordionTrigger>
         <Button size="icon" variant="ghost" onClick={() => onUpdate({ visible: !layer.visible })}>
           {layer.visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => onUpdate({ animationPaused: !layer.animationPaused })}
+        >
+          {layer.animationPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
         </Button>
         <Button size="icon" variant="ghost" disabled={!canDuplicate} onClick={onDuplicate}>
           <Copy className="h-4 w-4" />
