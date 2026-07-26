@@ -63,7 +63,7 @@ export function LayerPanel({
         <ParamSlider label="Verlauf-Winkel" min={0} max={360} step={1} value={layer.gradientAngle} onChange={(v) => onUpdate({ gradientAngle: v })} />
         <ParamSlider label="Winkel" min={0} max={360} step={1} value={layer.baseAngle} onChange={(v) => onUpdate({ baseAngle: v })} />
         <ParamSlider label="Noise-Scale" min={0.0002} max={0.05} step={0.0002} value={layer.noiseScale} onChange={(v) => onUpdate({ noiseScale: v })} />
-        <ParamSlider label="Amplitude" min={0} max={500} step={5} value={layer.amplitude} onChange={(v) => onUpdate({ amplitude: v })} />
+        <ParamSlider label="Amplitude" min={0} max={1400} step={5} value={layer.amplitude} onChange={(v) => onUpdate({ amplitude: v })} />
         <ParamSlider label="Zoom" min={-50} max={50} step={1} value={layer.zoom} onChange={(v) => onUpdate({ zoom: v })} />
         <ParamSlider label="Position X" min={-500} max={500} step={10} value={layer.offsetX} onChange={(v) => onUpdate({ offsetX: v })} />
         <ParamSlider label="Position Y" min={-500} max={500} step={10} value={layer.offsetY} onChange={(v) => onUpdate({ offsetY: v })} />
