@@ -10,7 +10,7 @@ function makeLayer(overrides: Partial<LayerParams> = {}): LayerParams {
       { id: 's0', position: 0, color: '#000000' },
       { id: 's1', position: 1, color: '#ffffff' },
     ],
-    gradientAngle: 90,
+    gradientAngle: 90, gradientType: 'linear',
     baseAngle: 0,
     noiseScale: 0.001,
     amplitude: 300,

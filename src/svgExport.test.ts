@@ -6,7 +6,7 @@ const state: PatternState = {
   backgroundFillMode: 'solid',
   backgroundSolidColor: '#111111',
   backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
-  backgroundGradientAngle: 90,
+  backgroundGradientAngle: 90, backgroundGradientType: 'linear',
   animationPlaying: false,
   animationSpeed: 1,
   orientation: 'landscape',
@@ -18,7 +18,7 @@ const state: PatternState = {
         { id: 'a', position: 0, color: '#ff0000' },
         { id: 'b', position: 1, color: '#0000ff' },
       ],
-      gradientAngle: 45,
+      gradientAngle: 45, gradientType: 'linear',
       baseAngle: 0,
       noiseScale: 0.01,
       amplitude: 50,
@@ -120,7 +120,7 @@ describe('buildSvgString', () => {
       backgroundFillMode: 'solid',
       backgroundSolidColor: '#111111',
       backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
-      backgroundGradientAngle: 90,
+      backgroundGradientAngle: 90, backgroundGradientType: 'linear',
   animationPlaying: false,
   animationSpeed: 1,
   orientation: 'landscape',
@@ -132,7 +132,7 @@ describe('buildSvgString', () => {
             { id: 'a', position: 0, color: '#ff0000' },
             { id: 'b', position: 1, color: '#0000ff' },
           ],
-          gradientAngle: 45,
+          gradientAngle: 45, gradientType: 'linear',
           baseAngle: 0,
           noiseScale: 0.01,
           amplitude: 50,
@@ -174,7 +174,7 @@ describe('buildSvgString', () => {
       backgroundFillMode: 'solid',
       backgroundSolidColor: '#111111',
       backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
-      backgroundGradientAngle: 90,
+      backgroundGradientAngle: 90, backgroundGradientType: 'linear',
   animationPlaying: false,
   animationSpeed: 1,
   orientation: 'landscape',
@@ -186,7 +186,7 @@ describe('buildSvgString', () => {
             { id: 'a', position: 0, color: '#ff0000' },
             { id: 'b', position: 1, color: '#0000ff' },
           ],
-          gradientAngle: 45,
+          gradientAngle: 45, gradientType: 'linear',
           baseAngle: 0,
           noiseScale: 0.01,
           amplitude: 50,
@@ -232,7 +232,7 @@ describe('buildSvgString', () => {
       backgroundFillMode: 'solid',
       backgroundSolidColor: '#111111',
       backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
-      backgroundGradientAngle: 90,
+      backgroundGradientAngle: 90, backgroundGradientType: 'linear',
   animationPlaying: false,
   animationSpeed: 1,
   orientation: 'landscape',
@@ -244,7 +244,7 @@ describe('buildSvgString', () => {
             { id: 'a', position: 0, color: '#ff0000' },
             { id: 'b', position: 1, color: '#0000ff' },
           ],
-          gradientAngle: 45,
+          gradientAngle: 45, gradientType: 'linear',
           baseAngle: 0,
           noiseScale: 0.01,
           amplitude: 50,
@@ -333,7 +333,7 @@ describe('buildSvgString', () => {
       backgroundFillMode: 'solid',
       backgroundSolidColor: '#111111',
       backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
-      backgroundGradientAngle: 90,
+      backgroundGradientAngle: 90, backgroundGradientType: 'linear',
       animationPlaying: false,
       animationSpeed: 1,
   orientation: 'landscape',
@@ -345,7 +345,7 @@ describe('buildSvgString', () => {
             { id: 'a', position: 0, color: '#ff0000' },
             { id: 'b', position: 1, color: '#0000ff' },
           ],
-          gradientAngle: 45,
+          gradientAngle: 45, gradientType: 'linear',
           baseAngle: 0,
           noiseScale: 0.01,
           amplitude: 50,
@@ -388,7 +388,7 @@ describe('buildSvgString', () => {
       backgroundFillMode: 'solid',
       backgroundSolidColor: '#111111',
       backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
-      backgroundGradientAngle: 90,
+      backgroundGradientAngle: 90, backgroundGradientType: 'linear',
       animationPlaying: false,
       animationSpeed: 1,
   orientation: 'landscape',
@@ -401,7 +401,7 @@ describe('buildSvgString', () => {
             { id: 'b', position: 0.5, color: '#00ff00' },
             { id: 'c', position: 1, color: '#0000ff' },
           ],
-          gradientAngle: 45,
+          gradientAngle: 45, gradientType: 'linear',
           baseAngle: 0,
           noiseScale: 0.01,
           amplitude: 50,
@@ -450,7 +450,7 @@ describe('buildSvgString', () => {
       backgroundFillMode: 'solid',
       backgroundSolidColor: '#111111',
       backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
-      backgroundGradientAngle: 90,
+      backgroundGradientAngle: 90, backgroundGradientType: 'linear',
       animationPlaying: false,
       animationSpeed: 1,
       orientation: 'landscape',
@@ -462,7 +462,7 @@ describe('buildSvgString', () => {
             { id: 'a', position: 0, color: '#ff0000' },
             { id: 'b', position: 1, color: '#0000ff' },
           ],
-          gradientAngle: 45,
+          gradientAngle: 45, gradientType: 'linear',
           baseAngle: 0,
           noiseScale: 0.01,
           amplitude: 50,
@@ -540,7 +540,7 @@ describe('buildSvgString', () => {
         { id: 'bg-b', position: 0.5, color: '#00ff00' },
         { id: 'bg-c', position: 1, color: '#0000ff' },
       ],
-      backgroundGradientAngle: 45,
+      backgroundGradientAngle: 45, backgroundGradientType: 'linear',
     };
     const svg = buildSvgString(gradientBgState, [[]], 300, 200);
 
@@ -557,5 +557,52 @@ describe('buildSvgString', () => {
     expect(stopMatches[1][2]).toBe('#00ff00');
     expect(stopMatches[2][1]).toBe('100%');
     expect(stopMatches[2][2]).toBe('#0000ff');
+  });
+
+  it('renders a radial gradient layer with a <radialGradient> element and the correct stops', () => {
+    const radialLayerState: PatternState = {
+      ...state,
+      layers: [
+        {
+          ...state.layers[0],
+          gradientType: 'radial',
+        },
+      ],
+    };
+    const line: Point[] = [
+      { x: 0, y: 0 },
+      { x: 10, y: 10 },
+    ];
+    const svg = buildSvgString(radialLayerState, [[line]], 300, 200);
+
+    expect(svg).toContain('stroke="url(#layer-gradient-0)"');
+    expect(svg).not.toContain('<linearGradient id="layer-gradient-0"');
+    expect(svg).toContain('<radialGradient id="layer-gradient-0"');
+
+    const defsMatch = svg.match(/<radialGradient id="layer-gradient-0"[^]*?<\/radialGradient>/);
+    expect(defsMatch).not.toBeNull();
+    const stopMatches = [...defsMatch![0].matchAll(/<stop offset="([^"]+)" stop-color="([^"]+)" \/>/g)];
+    expect(stopMatches).toHaveLength(2);
+    expect(stopMatches[0][1]).toBe('0%');
+    expect(stopMatches[0][2]).toBe('#ff0000');
+    expect(stopMatches[1][1]).toBe('100%');
+    expect(stopMatches[1][2]).toBe('#0000ff');
+  });
+
+  it('renders a radial background gradient with a <radialGradient id="background-gradient"> and a fill referencing it', () => {
+    const radialBgState: PatternState = {
+      ...state,
+      backgroundFillMode: 'gradient',
+      backgroundGradientType: 'radial',
+      backgroundColorStops: [
+        { id: 'bg-a', position: 0, color: '#ff0000' },
+        { id: 'bg-b', position: 1, color: '#0000ff' },
+      ],
+    };
+    const svg = buildSvgString(radialBgState, [[]], 300, 200);
+
+    expect(svg).toContain('fill="url(#background-gradient)"');
+    expect(svg).toContain('<radialGradient id="background-gradient"');
+    expect(svg).not.toContain('<linearGradient id="background-gradient"');
   });
 });

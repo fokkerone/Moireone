@@ -3,7 +3,7 @@ import { generateLayerLines } from './lineGenerator';
 import type { LayerParams, NoiseFn } from './types';
 
 const straightLayer: LayerParams = {
-  fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90,
+  fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90, gradientType: 'linear',
   baseAngle: 0,
   noiseScale: 0.01,
   amplitude: 0,
@@ -72,7 +72,7 @@ describe('generateLayerLines', () => {
     const height = 400;
 
     const curvingLayer: LayerParams = {
-      fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90,
+      fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90, gradientType: 'linear',
       baseAngle: 0,
       noiseScale: 0.01,
       amplitude: 50,
@@ -162,7 +162,7 @@ describe('generateLayerLines', () => {
     const height = 400;
 
     const baseLayer: LayerParams = {
-      fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90,
+      fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90, gradientType: 'linear',
       baseAngle: 0,
       noiseScale: 0.01,
       amplitude: 0,
@@ -236,7 +236,7 @@ describe('generateLayerLines', () => {
     const height = 200;
 
     const bounceLayer: LayerParams = {
-      fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90,
+      fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90, gradientType: 'linear',
       baseAngle: 0,
       // noiseScale 1 / zoom 1 => effective scale is 1, so the noise
       // function receives the RAW base-point x coordinate unmodified,
@@ -336,7 +336,7 @@ describe('generateLayerLines', () => {
     const height = 400;
 
     const macroLayer: LayerParams = {
-      fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90,
+      fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90, gradientType: 'linear',
       baseAngle: 0,
       noiseScale: 0.01,
       amplitude: 80,
@@ -418,7 +418,7 @@ describe('generateLayerLines', () => {
     const height = 400;
 
     const baseLayer: LayerParams = {
-      fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90,
+      fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90, gradientType: 'linear',
       baseAngle: 0,
       noiseScale: 0.01,
       amplitude: 80,

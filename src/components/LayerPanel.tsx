@@ -79,7 +79,25 @@ export function LayerPanel({
               colorStops={layer.colorStops}
               onChange={(stops) => onUpdate({ colorStops: stops })}
             />
-            <ParamSlider label="Verlauf-Winkel" min={0} max={360} step={1} value={layer.gradientAngle} onChange={(v) => onUpdate({ gradientAngle: v })} />
+            <div className="mb-2 flex gap-1">
+              <Button
+                size="sm"
+                variant={layer.gradientType === 'linear' ? 'default' : 'outline'}
+                onClick={() => onUpdate({ gradientType: 'linear' })}
+              >
+                Linear
+              </Button>
+              <Button
+                size="sm"
+                variant={layer.gradientType === 'radial' ? 'default' : 'outline'}
+                onClick={() => onUpdate({ gradientType: 'radial' })}
+              >
+                Radial
+              </Button>
+            </div>
+            {layer.gradientType === 'linear' && (
+              <ParamSlider label="Verlauf-Winkel" min={0} max={360} step={1} value={layer.gradientAngle} onChange={(v) => onUpdate({ gradientAngle: v })} />
+            )}
           </>
         )}
         <ParamSlider label="Winkel" min={ANIMATABLE_RANGES.baseAngle.min} max={ANIMATABLE_RANGES.baseAngle.max} step={1} value={layer.baseAngle} onChange={(v) => onUpdate({ baseAngle: v })} />

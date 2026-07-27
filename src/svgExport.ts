@@ -1,4 +1,4 @@
-import type { ColorStop, PatternState, Point } from './types';
+import type { ColorStop, GradientType, PatternState, Point } from './types';
 import { widthAt3 } from './widthProfile';
 import { buildRibbon } from './ribbon';
 import { sortStops } from './colorStops';
@@ -7,9 +7,21 @@ function buildGradientDef(
   gradientId: number | string,
   width: number,
   height: number,
+  gradientType: GradientType,
   angleDegrees: number,
   stops: ColorStop[]
 ): string {
+  const stopEls = sortStops(stops)
+    .map((stop) => `<stop offset="${stop.position * 100}%" stop-color="${stop.color}" />`)
+    .join('');
+
+  if (gradientType === 'radial') {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.sqrt(width * width + height * height) / 2;
+    return `<radialGradient id="${gradientId}" gradientUnits="userSpaceOnUse" cx="${centerX.toFixed(2)}" cy="${centerY.toFixed(2)}" r="${radius.toFixed(2)}">${stopEls}</radialGradient>`;
+  }
+
   const angleRad = (angleDegrees * Math.PI) / 180;
   const diagonal = Math.sqrt(width * width + height * height);
   const half = diagonal / 2;
@@ -21,10 +33,6 @@ function buildGradientDef(
   const y1 = centerY - dy * half;
   const x2 = centerX + dx * half;
   const y2 = centerY + dy * half;
-
-  const stopEls = sortStops(stops)
-    .map((stop) => `<stop offset="${stop.position * 100}%" stop-color="${stop.color}" />`)
-    .join('');
 
   return `<linearGradient id="${gradientId}" gradientUnits="userSpaceOnUse" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}">${stopEls}</linearGradient>`;
 }
@@ -46,6 +54,7 @@ export function buildSvgString(
         'background-gradient',
         width,
         height,
+        state.backgroundGradientType,
         state.backgroundGradientAngle,
         state.backgroundColorStops
       )
@@ -60,6 +69,7 @@ export function buildSvgString(
           `layer-gradient-${layerIndex}`,
           width,
           height,
+          layer.gradientType,
           layer.gradientAngle,
           layer.colorStops
         )

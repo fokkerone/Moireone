@@ -3,7 +3,7 @@ import { lineOffset } from './flowfield';
 import type { LayerParams, NoiseFn } from './types';
 
 const baseLayer: LayerParams = {
-  fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90,
+  fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90, gradientType: 'linear',
   baseAngle: 45,
   noiseScale: 0.01,
   amplitude: 30,

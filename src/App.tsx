@@ -122,6 +122,9 @@ export function App() {
         onBackgroundGradientAngleChange={(angle) =>
           setState((prev) => ({ ...prev, backgroundGradientAngle: angle }))
         }
+        onBackgroundGradientTypeChange={(type) =>
+          setState((prev) => ({ ...prev, backgroundGradientType: type }))
+        }
         onGlobalSpacingChange={(spacing) => setState((prev) => setGlobalSpacing(prev, spacing))}
         onGlobalWeightChange={(weight) => setState((prev) => setGlobalWeight(prev, weight))}
         onUpdateLayer={updateLayer}

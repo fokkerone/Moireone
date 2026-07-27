@@ -1,5 +1,5 @@
 import type p5 from 'p5';
-import type { ColorStop, PatternState, Point } from './types';
+import type { ColorStop, GradientType, PatternState, Point } from './types';
 import { generateLayerLines } from './lineGenerator';
 import { widthAt3 } from './widthProfile';
 import { buildRibbon } from './ribbon';
@@ -9,22 +9,31 @@ function buildGradient(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
+  gradientType: GradientType,
   angleDegrees: number,
   stops: ColorStop[]
 ): CanvasGradient {
-  const angleRad = (angleDegrees * Math.PI) / 180;
-  const diagonal = Math.sqrt(width * width + height * height);
-  const half = diagonal / 2;
-  const centerX = width / 2;
-  const centerY = height / 2;
-  const dx = Math.cos(angleRad);
-  const dy = Math.sin(angleRad);
-  const gradient = ctx.createLinearGradient(
-    centerX - dx * half,
-    centerY - dy * half,
-    centerX + dx * half,
-    centerY + dy * half
-  );
+  let gradient: CanvasGradient;
+  if (gradientType === 'radial') {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.sqrt(width * width + height * height) / 2;
+    gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+  } else {
+    const angleRad = (angleDegrees * Math.PI) / 180;
+    const diagonal = Math.sqrt(width * width + height * height);
+    const half = diagonal / 2;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const dx = Math.cos(angleRad);
+    const dy = Math.sin(angleRad);
+    gradient = ctx.createLinearGradient(
+      centerX - dx * half,
+      centerY - dy * half,
+      centerX + dx * half,
+      centerY + dy * half
+    );
+  }
   for (const stop of sortStops(stops)) {
     gradient.addColorStop(stop.position, stop.color);
   }
@@ -40,6 +49,7 @@ export function renderPattern(p: p5, state: PatternState): Point[][][] {
         ctx,
         p.width,
         p.height,
+        state.backgroundGradientType,
         state.backgroundGradientAngle,
         state.backgroundColorStops
       );
@@ -65,7 +75,7 @@ export function renderPattern(p: p5, state: PatternState): Point[][][] {
         if (layer.fillMode === 'solid') {
           ctx.fillStyle = layer.solidColor;
         } else {
-          ctx.fillStyle = buildGradient(ctx, p.width, p.height, layer.gradientAngle, layer.colorStops);
+          ctx.fillStyle = buildGradient(ctx, p.width, p.height, layer.gradientType, layer.gradientAngle, layer.colorStops);
         }
 
         for (const line of lines) {
@@ -112,7 +122,7 @@ export function renderPattern(p: p5, state: PatternState): Point[][][] {
         if (layer.fillMode === 'solid') {
           ctx.strokeStyle = layer.solidColor;
         } else {
-          ctx.strokeStyle = buildGradient(ctx, p.width, p.height, layer.gradientAngle, layer.colorStops);
+          ctx.strokeStyle = buildGradient(ctx, p.width, p.height, layer.gradientType, layer.gradientAngle, layer.colorStops);
         }
         p.strokeWeight(layer.weight);
         p.noFill();

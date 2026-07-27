@@ -15,11 +15,14 @@ export interface ColorStop {
   color: string;
 }
 
+export type GradientType = 'linear' | 'radial';
+
 export interface LayerParams {
   fillMode: 'solid' | 'gradient';
   solidColor: string;
   colorStops: ColorStop[];
   gradientAngle: number;
+  gradientType: GradientType;
   baseAngle: number;
   noiseScale: number;
   amplitude: number;
@@ -52,6 +55,7 @@ export interface PatternState {
   backgroundSolidColor: string;
   backgroundColorStops: ColorStop[];
   backgroundGradientAngle: number;
+  backgroundGradientType: GradientType;
   layers: LayerParams[];
   animationPlaying: boolean;
   animationSpeed: number;

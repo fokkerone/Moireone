@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ParamSlider } from './ParamSlider';
 import { LayerAccordion } from './LayerAccordion';
 import { ColorStopsEditor } from './ColorStopsEditor';
-import type { ColorStop, LayerParams, PatternState } from '../types';
+import type { ColorStop, GradientType, LayerParams, PatternState } from '../types';
 
 interface SidebarProps {
   state: PatternState;
@@ -12,6 +12,7 @@ interface SidebarProps {
   onBackgroundSolidColorChange: (color: string) => void;
   onBackgroundColorStopsChange: (stops: ColorStop[]) => void;
   onBackgroundGradientAngleChange: (angle: number) => void;
+  onBackgroundGradientTypeChange: (type: GradientType) => void;
   onGlobalSpacingChange: (spacing: number) => void;
   onGlobalWeightChange: (weight: number) => void;
   onUpdateLayer: (index: number, patch: Partial<LayerParams>) => void;
@@ -30,6 +31,7 @@ export function Sidebar({
   onBackgroundSolidColorChange,
   onBackgroundColorStopsChange,
   onBackgroundGradientAngleChange,
+  onBackgroundGradientTypeChange,
   onGlobalSpacingChange,
   onGlobalWeightChange,
   onUpdateLayer,
@@ -86,14 +88,32 @@ export function Sidebar({
       {state.backgroundFillMode === 'gradient' && (
         <>
           <ColorStopsEditor colorStops={state.backgroundColorStops} onChange={onBackgroundColorStopsChange} />
-          <ParamSlider
-            label="Hintergrund-Winkel"
-            min={0}
-            max={360}
-            step={1}
-            value={state.backgroundGradientAngle}
-            onChange={onBackgroundGradientAngleChange}
-          />
+          <div className="mb-2 flex gap-1">
+            <Button
+              size="sm"
+              variant={state.backgroundGradientType === 'linear' ? 'default' : 'outline'}
+              onClick={() => onBackgroundGradientTypeChange('linear')}
+            >
+              Linear
+            </Button>
+            <Button
+              size="sm"
+              variant={state.backgroundGradientType === 'radial' ? 'default' : 'outline'}
+              onClick={() => onBackgroundGradientTypeChange('radial')}
+            >
+              Radial
+            </Button>
+          </div>
+          {state.backgroundGradientType === 'linear' && (
+            <ParamSlider
+              label="Hintergrund-Winkel"
+              min={0}
+              max={360}
+              step={1}
+              value={state.backgroundGradientAngle}
+              onChange={onBackgroundGradientAngleChange}
+            />
+          )}
         </>
       )}
       <ParamSlider label="Abstand" min={4} max={50} step={1} value={spacing} onChange={onGlobalSpacingChange} />
