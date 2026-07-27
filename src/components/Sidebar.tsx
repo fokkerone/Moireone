@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ParamSlider } from './ParamSlider';
 import { LayerAccordion } from './LayerAccordion';
@@ -34,9 +36,23 @@ export function Sidebar({
 }: SidebarProps) {
   const spacing = state.layers[0]?.spacing ?? 14;
   const weight = state.layers[0]?.weight ?? 1.5;
+  const [collapsed, setCollapsed] = useState(false);
+
+  if (collapsed) {
+    return (
+      <div className="fixed right-0 top-0 z-10 flex h-screen w-10 items-start justify-center bg-neutral-900/85 pt-3">
+        <Button size="icon" variant="ghost" onClick={() => setCollapsed(false)}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="fixed right-0 top-0 h-screen w-72 overflow-y-auto bg-neutral-900/85 p-3 text-sm text-white">
+    <div className="fixed right-0 top-0 z-10 h-screen w-[27rem] overflow-y-auto bg-neutral-900/85 p-3 text-sm text-white">
+      <Button size="icon" variant="ghost" className="mb-2" onClick={() => setCollapsed(true)}>
+        <ChevronRight className="h-4 w-4" />
+      </Button>
       <Button variant="outline" className="mb-2 w-full" onClick={onOrientationChange}>
         {state.orientation === 'landscape' ? 'Querformat' : 'Hochformat'}
       </Button>
