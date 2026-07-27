@@ -1,3 +1,7 @@
+import type { Orientation } from './canvasSize';
+
+export type { Orientation };
+
 export interface Point {
   x: number;
   y: number;
@@ -46,4 +50,5 @@ export interface PatternState {
   layers: LayerParams[];
   animationPlaying: boolean;
   animationSpeed: number;
+  orientation: Orientation;
 }

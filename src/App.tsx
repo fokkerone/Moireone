@@ -12,11 +12,13 @@ import {
   setGlobalWeight,
 } from './state';
 import { exportSvg } from './svgExport';
+import { getCanvasSize } from './canvasSize';
 import type { LayerParams, Point } from './types';
 
 export function App() {
   const [state, setState] = useState(createDefaultState());
   const [viewZoom, setViewZoom] = useState(1);
+  const { width: canvasWidth, height: canvasHeight } = getCanvasSize(state.orientation);
   const cachedLinesRef = useRef<Point[][][]>([]);
   const elapsedRef = useRef<number[]>([]);
   const lastFrameTimeRef = useRef<number | null>(null);
@@ -35,7 +37,7 @@ export function App() {
   }
 
   function handleExport() {
-    exportSvg(state, cachedLinesRef.current, window.innerWidth, window.innerHeight);
+    exportSvg(state, cachedLinesRef.current, canvasWidth, canvasHeight);
   }
 
   useEffect(() => {
@@ -90,6 +92,8 @@ export function App() {
       <Canvas
         state={state}
         zoom={viewZoom}
+        width={canvasWidth}
+        height={canvasHeight}
         onCachedLinesChange={(lines) => {
           cachedLinesRef.current = lines;
         }}
@@ -97,6 +101,12 @@ export function App() {
       <ZoomControls zoom={viewZoom} onZoomChange={setViewZoom} />
       <Sidebar
         state={state}
+        onOrientationChange={() =>
+          setState((prev) => ({
+            ...prev,
+            orientation: prev.orientation === 'landscape' ? 'portrait' : 'landscape',
+          }))
+        }
         onBackgroundChange={(color) => setState((prev) => ({ ...prev, background: color }))}
         onGlobalSpacingChange={(spacing) => setState((prev) => setGlobalSpacing(prev, spacing))}
         onGlobalWeightChange={(weight) => setState((prev) => setGlobalWeight(prev, weight))}

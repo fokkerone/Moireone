@@ -7,9 +7,11 @@ interface CanvasProps {
   state: PatternState;
   onCachedLinesChange: (lines: Point[][][]) => void;
   zoom: number;
+  width: number;
+  height: number;
 }
 
-export function Canvas({ state, onCachedLinesChange, zoom }: CanvasProps) {
+export function Canvas({ state, onCachedLinesChange, zoom, width, height }: CanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const stateRef = useRef<PatternState>(state);
   const p5Ref = useRef<p5 | null>(null);
@@ -25,6 +27,11 @@ export function Canvas({ state, onCachedLinesChange, zoom }: CanvasProps) {
   }, [onCachedLinesChange]);
 
   useEffect(() => {
+    p5Ref.current?.resizeCanvas(width, height);
+    p5Ref.current?.redraw();
+  }, [width, height]);
+
+  useEffect(() => {
     let disposed = false;
     // Capture the container node now: under React 19 StrictMode's dev-only
     // double-invoke of this effect, containerRef.current can already read as
@@ -35,7 +42,7 @@ export function Canvas({ state, onCachedLinesChange, zoom }: CanvasProps) {
     const sketch = (p: p5) => {
       p.setup = () => {
         if (disposed) return;
-        p.createCanvas(p.windowWidth, p.windowHeight);
+        p.createCanvas(width, height);
         p.noLoop();
       };
 
@@ -43,12 +50,6 @@ export function Canvas({ state, onCachedLinesChange, zoom }: CanvasProps) {
         if (disposed) return;
         const lines = renderPattern(p, stateRef.current);
         onCachedLinesChangeRef.current(lines);
-      };
-
-      p.windowResized = () => {
-        if (disposed) return;
-        p.resizeCanvas(p.windowWidth, p.windowHeight);
-        p.redraw();
       };
     };
 
@@ -81,11 +82,10 @@ export function Canvas({ state, onCachedLinesChange, zoom }: CanvasProps) {
   }, []);
 
   return (
-    <div className="fixed inset-0 overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center overflow-hidden bg-neutral-950">
       <div
         ref={containerRef}
-        className="h-full w-full"
-        style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}
+        style={{ width, height, transform: `scale(${zoom})`, transformOrigin: 'center center' }}
       />
     </div>
   );

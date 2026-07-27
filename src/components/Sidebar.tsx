@@ -15,6 +15,7 @@ interface SidebarProps {
   onExport: () => void;
   onToggleAnimationPlaying: () => void;
   onAnimationSpeedChange: (speed: number) => void;
+  onOrientationChange: () => void;
 }
 
 export function Sidebar({
@@ -29,12 +30,16 @@ export function Sidebar({
   onExport,
   onToggleAnimationPlaying,
   onAnimationSpeedChange,
+  onOrientationChange,
 }: SidebarProps) {
   const spacing = state.layers[0]?.spacing ?? 14;
   const weight = state.layers[0]?.weight ?? 1.5;
 
   return (
     <div className="fixed right-0 top-0 h-screen w-72 overflow-y-auto bg-neutral-900/85 p-3 text-sm text-white">
+      <Button variant="outline" className="mb-2 w-full" onClick={onOrientationChange}>
+        {state.orientation === 'landscape' ? 'Querformat' : 'Hochformat'}
+      </Button>
       <div className="mb-2 flex items-center gap-2">
         <label className="w-32 shrink-0 text-xs">Hintergrund</label>
         <input

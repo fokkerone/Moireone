@@ -6,6 +6,7 @@ const state: PatternState = {
   background: '#111111',
   animationPlaying: false,
   animationSpeed: 1,
+  orientation: 'landscape',
   layers: [
     {
       fillMode: 'gradient',
@@ -89,6 +90,7 @@ describe('buildSvgString', () => {
       background: '#111111',
   animationPlaying: false,
   animationSpeed: 1,
+  orientation: 'landscape',
       layers: [
         {
           fillMode: 'gradient',
@@ -137,6 +139,7 @@ describe('buildSvgString', () => {
       background: '#111111',
   animationPlaying: false,
   animationSpeed: 1,
+  orientation: 'landscape',
       layers: [
         {
           fillMode: 'gradient',
@@ -189,6 +192,7 @@ describe('buildSvgString', () => {
       background: '#111111',
   animationPlaying: false,
   animationSpeed: 1,
+  orientation: 'landscape',
       layers: [
         {
           fillMode: 'gradient',
@@ -284,6 +288,7 @@ describe('buildSvgString', () => {
       background: '#111111',
       animationPlaying: false,
       animationSpeed: 1,
+  orientation: 'landscape',
       layers: [
         {
           fillMode: 'solid',
@@ -333,6 +338,7 @@ describe('buildSvgString', () => {
       background: '#111111',
       animationPlaying: false,
       animationSpeed: 1,
+  orientation: 'landscape',
       layers: [
         {
           fillMode: 'gradient',

@@ -45,6 +45,7 @@ export function createDefaultState(): PatternState {
     layers: [createDefaultLayer(0), createDefaultLayer(1)],
     animationPlaying: false,
     animationSpeed: 1,
+    orientation: 'landscape',
   };
 }
 
