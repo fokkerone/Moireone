@@ -33,12 +33,14 @@ export interface LayerParams {
   offsetY: number;
   widthCurveEnabled: boolean;
   widthCurveShape: 'linear' | 'parabola';
-  widthMin: number;
-  widthMax: number;
-  widthMode: 'alongLine' | 'byPosition';
+  widthStart: number;
+  widthCenter: number;
+  widthEnd: number;
+  widthMode: 'alongLine' | 'byPosition' | 'byAngle';
   widthCenterX: number;
   widthCenterY: number;
   widthRadius: number;
+  widthAngle: number;
   macroShape: 'circle' | 'parabola' | 'smooth';
   macroRadius: number;
   textureAmplitude: number;

@@ -29,8 +29,9 @@ const state: PatternState = {
       offsetY: 0,
       widthCurveEnabled: false,
       widthCurveShape: 'linear',
-      widthMin: 1,
-      widthMax: 1,
+      widthStart: 1,
+      widthCenter: 1,
+      widthEnd: 1,
       macroShape: 'smooth',
       macroRadius: 800,
       textureAmplitude: 0,
@@ -39,6 +40,7 @@ const state: PatternState = {
       widthCenterX: 0,
       widthCenterY: 0,
       widthRadius: 400,
+      widthAngle: 0,
     },
   ],
 };
@@ -113,8 +115,9 @@ describe('buildSvgString', () => {
           offsetY: 0,
           widthCurveEnabled: false,
           widthCurveShape: 'linear',
-          widthMin: 1,
-          widthMax: 1,
+          widthStart: 1,
+          widthCenter: 1,
+          widthEnd: 1,
           macroShape: 'smooth',
           macroRadius: 800,
           textureAmplitude: 0,
@@ -123,6 +126,7 @@ describe('buildSvgString', () => {
           widthCenterX: 0,
           widthCenterY: 0,
           widthRadius: 400,
+          widthAngle: 0,
         },
       ],
     };
@@ -162,8 +166,9 @@ describe('buildSvgString', () => {
           offsetY: 0,
           widthCurveEnabled: true,
           widthCurveShape: 'linear',
-          widthMin: 2,
-          widthMax: 8,
+          widthStart: 2,
+          widthCenter: 8,
+          widthEnd: 2,
           macroShape: 'smooth',
           macroRadius: 800,
           textureAmplitude: 0,
@@ -172,6 +177,7 @@ describe('buildSvgString', () => {
           widthCenterX: 0,
           widthCenterY: 0,
           widthRadius: 400,
+          widthAngle: 0,
         },
       ],
     };
@@ -215,8 +221,9 @@ describe('buildSvgString', () => {
           offsetY: 0,
           widthCurveEnabled: true,
           widthCurveShape: 'linear',
-          widthMin: 2,
-          widthMax: 20,
+          widthStart: 2,
+          widthCenter: 20,
+          widthEnd: 2,
           macroShape: 'smooth',
           macroRadius: 800,
           textureAmplitude: 0,
@@ -225,6 +232,7 @@ describe('buildSvgString', () => {
           widthCenterX: 0,
           widthCenterY: 0,
           widthRadius: 100,
+          widthAngle: 0,
         },
       ],
     };
@@ -311,8 +319,9 @@ describe('buildSvgString', () => {
           offsetY: 0,
           widthCurveEnabled: false,
           widthCurveShape: 'linear',
-          widthMin: 1,
-          widthMax: 1,
+          widthStart: 1,
+          widthCenter: 1,
+          widthEnd: 1,
           macroShape: 'smooth',
           macroRadius: 800,
           textureAmplitude: 0,
@@ -321,6 +330,7 @@ describe('buildSvgString', () => {
           widthCenterX: 0,
           widthCenterY: 0,
           widthRadius: 400,
+          widthAngle: 0,
         },
       ],
     };
@@ -362,8 +372,9 @@ describe('buildSvgString', () => {
           offsetY: 0,
           widthCurveEnabled: false,
           widthCurveShape: 'linear',
-          widthMin: 1,
-          widthMax: 1,
+          widthStart: 1,
+          widthCenter: 1,
+          widthEnd: 1,
           macroShape: 'smooth',
           macroRadius: 800,
           textureAmplitude: 0,
@@ -372,6 +383,7 @@ describe('buildSvgString', () => {
           widthCenterX: 0,
           widthCenterY: 0,
           widthRadius: 400,
+          widthAngle: 0,
         },
       ],
     };
@@ -388,5 +400,88 @@ describe('buildSvgString', () => {
     expect(stopMatches[1][2]).toBe('#00ff00');
     expect(stopMatches[2][1]).toBe('100%');
     expect(stopMatches[2][2]).toBe('#0000ff');
+  });
+
+  it('widthMode "byAngle" makes the ribbon wide near the axis origin and narrow along the axis direction', () => {
+    const byAngleState: PatternState = {
+      background: '#111111',
+      animationPlaying: false,
+      animationSpeed: 1,
+      orientation: 'landscape',
+      layers: [
+        {
+          fillMode: 'gradient',
+          solidColor: '#ff0000',
+          colorStops: [
+            { id: 'a', position: 0, color: '#ff0000' },
+            { id: 'b', position: 1, color: '#0000ff' },
+          ],
+          gradientAngle: 45,
+          baseAngle: 0,
+          noiseScale: 0.01,
+          amplitude: 50,
+          spacing: 10,
+          weight: 2,
+          alpha: 0.5,
+          seed: 0,
+          zoom: 1,
+          visible: true,
+          offsetX: 0,
+          offsetY: 0,
+          widthCurveEnabled: true,
+          widthCurveShape: 'linear',
+          widthStart: 2,
+          widthCenter: 10,
+          widthEnd: 2,
+          macroShape: 'smooth',
+          macroRadius: 800,
+          textureAmplitude: 0,
+          animationPaused: false,
+          widthMode: 'byAngle',
+          widthCenterX: 0,
+          widthCenterY: 0,
+          widthRadius: 100,
+          widthAngle: 0,
+        },
+      ],
+    };
+
+    // Canvas is 200x200, so the axis origin (width/2 + widthCenterX,
+    // height/2 + widthCenterY) is (100, 100). widthAngle=0 means the axis is
+    // horizontal, so this horizontal line lies exactly along it: x=100 is at
+    // the origin (signed distance 0, the tent's center/thick point), and
+    // x=200 is at signed distance 100 == widthRadius (fully at the "end"
+    // extreme, thin).
+    const line: Point[] = [
+      { x: 100, y: 100 },
+      { x: 200, y: 100 },
+    ];
+    const svg = buildSvgString(byAngleState, [[line]], 200, 200);
+
+    const pathMatch = svg.match(/<path d="([^"]+)"/);
+    expect(pathMatch).not.toBeNull();
+    const d = pathMatch![1];
+
+    // buildRibbon's contract: n "upper" points in point order, followed by n
+    // "lower" points in REVERSE point order -- for our 2-point line the 4
+    // ribbon vertices are [upper0, upper1, lower1, lower0].
+    const coords = [...d.matchAll(/(-?\d+\.\d+),(-?\d+\.\d+)/g)].map(([, x, y]) => ({
+      x: Number(x),
+      y: Number(y),
+    }));
+    expect(coords).toHaveLength(4);
+
+    const [upper0, upper1, lower1, lower0] = coords;
+
+    const widthAtOrigin = Math.abs(upper0.y - lower0.y);
+    const widthAtFarEnd = Math.abs(upper1.y - lower1.y);
+
+    expect(upper0.x).toBeCloseTo(100, 6);
+    expect(upper1.x).toBeCloseTo(200, 6);
+
+    // Near the axis origin -> full widthCenter (thick).
+    expect(widthAtOrigin).toBeCloseTo(10, 6);
+    // 100+ px away along the axis (at widthRadius) -> full widthEnd (thin).
+    expect(widthAtFarEnd).toBeCloseTo(2, 6);
   });
 });

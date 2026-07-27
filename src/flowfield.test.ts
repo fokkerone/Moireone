@@ -17,8 +17,9 @@ const baseLayer: LayerParams = {
   offsetY: 0,
   widthCurveEnabled: false,
   widthCurveShape: 'linear',
-  widthMin: 1,
-  widthMax: 1,
+  widthStart: 1,
+  widthCenter: 1,
+  widthEnd: 1,
   macroShape: 'smooth',
   macroRadius: 800,
   textureAmplitude: 0,
@@ -27,6 +28,7 @@ const baseLayer: LayerParams = {
   widthCenterX: 0,
   widthCenterY: 0,
   widthRadius: 400,
+  widthAngle: 0,
 };
 
 describe('lineOffset', () => {

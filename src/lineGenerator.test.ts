@@ -17,8 +17,9 @@ const straightLayer: LayerParams = {
   offsetY: 0,
   widthCurveEnabled: false,
   widthCurveShape: 'linear',
-  widthMin: 1,
-  widthMax: 1,
+  widthStart: 1,
+  widthCenter: 1,
+  widthEnd: 1,
   macroShape: 'smooth',
   macroRadius: 800,
   textureAmplitude: 0,
@@ -27,6 +28,7 @@ const straightLayer: LayerParams = {
   widthCenterX: 0,
   widthCenterY: 0,
   widthRadius: 400,
+  widthAngle: 0,
 };
 
 const neutralNoise: NoiseFn = () => 0.5;
@@ -84,8 +86,9 @@ describe('generateLayerLines', () => {
       offsetY: 0,
       widthCurveEnabled: false,
       widthCurveShape: 'linear',
-      widthMin: 1,
-      widthMax: 1,
+      widthStart: 1,
+      widthCenter: 1,
+      widthEnd: 1,
       macroShape: 'smooth',
       macroRadius: 800,
       textureAmplitude: 0,
@@ -94,6 +97,7 @@ describe('generateLayerLines', () => {
       widthCenterX: 0,
       widthCenterY: 0,
       widthRadius: 400,
+      widthAngle: 0,
     };
 
     // Deterministic, non-constant noise: the displacement genuinely varies
@@ -172,8 +176,9 @@ describe('generateLayerLines', () => {
       offsetY: 0,
       widthCurveEnabled: false,
       widthCurveShape: 'linear',
-      widthMin: 1,
-      widthMax: 1,
+      widthStart: 1,
+      widthCenter: 1,
+      widthEnd: 1,
       macroShape: 'smooth',
       macroRadius: 800,
       textureAmplitude: 0,
@@ -182,6 +187,7 @@ describe('generateLayerLines', () => {
       widthCenterX: 0,
       widthCenterY: 0,
       widthRadius: 400,
+      widthAngle: 0,
     };
     const offsetLayer: LayerParams = { ...baseLayer, offsetX: 50, offsetY: 30 };
 
@@ -249,8 +255,9 @@ describe('generateLayerLines', () => {
       offsetY: 0,
       widthCurveEnabled: false,
       widthCurveShape: 'linear',
-      widthMin: 1,
-      widthMax: 1,
+      widthStart: 1,
+      widthCenter: 1,
+      widthEnd: 1,
       macroShape: 'smooth',
       macroRadius: 800,
       textureAmplitude: 150,
@@ -259,6 +266,7 @@ describe('generateLayerLines', () => {
       widthCenterX: 0,
       widthCenterY: 0,
       widthRadius: 400,
+      widthAngle: 0,
     };
 
     // Deterministic noise keyed on the base point's x coordinate (which is
@@ -342,8 +350,9 @@ describe('generateLayerLines', () => {
       offsetY: 0,
       widthCurveEnabled: false,
       widthCurveShape: 'linear',
-      widthMin: 1,
-      widthMax: 1,
+      widthStart: 1,
+      widthCenter: 1,
+      widthEnd: 1,
       macroShape: 'circle',
       macroRadius: 300,
       textureAmplitude: 0,
@@ -352,6 +361,7 @@ describe('generateLayerLines', () => {
       widthCenterX: 0,
       widthCenterY: 0,
       widthRadius: 400,
+      widthAngle: 0,
     };
 
     const neutralNoise: NoiseFn = () => 0.5;
@@ -422,8 +432,9 @@ describe('generateLayerLines', () => {
       offsetY: 0,
       widthCurveEnabled: false,
       widthCurveShape: 'linear',
-      widthMin: 1,
-      widthMax: 1,
+      widthStart: 1,
+      widthCenter: 1,
+      widthEnd: 1,
       macroShape: 'parabola',
       macroRadius: 300,
       textureAmplitude: 0,
@@ -432,6 +443,7 @@ describe('generateLayerLines', () => {
       widthCenterX: 0,
       widthCenterY: 0,
       widthRadius: 400,
+      widthAngle: 0,
     };
 
     const texturedLayer: LayerParams = { ...baseLayer, textureAmplitude: 50 };
