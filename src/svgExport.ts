@@ -51,7 +51,7 @@ export function buildSvgString(
       )
     );
   }
-  const polylines: string[] = [];
+  const layerGroups: string[] = [];
   state.layers.forEach((layer, layerIndex) => {
     if (!layer.visible) return;
     if (layer.fillMode === 'gradient') {
@@ -67,6 +67,7 @@ export function buildSvgString(
     }
     const paint = layer.fillMode === 'solid' ? layer.solidColor : `url(#layer-gradient-${layerIndex})`;
     const lines = layerLines[layerIndex] ?? [];
+    const polylines: string[] = [];
     for (const line of lines) {
       if (layer.widthCurveEnabled) {
         const widths = line.map((point, i) => {
@@ -114,15 +115,19 @@ export function buildSvgString(
         );
       }
     }
+    const layerName = `Layer ${layerIndex + 1}`;
+    layerGroups.push(
+      `<g id="layer-${layerIndex}" inkscape:label="${layerName}" inkscape:groupmode="layer">${polylines.join('')}</g>`
+    );
   });
 
   const defs = `<defs>${gradientDefs.join('')}</defs>`;
 
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
     rect,
     defs,
-    ...polylines,
+    ...layerGroups,
     '</svg>',
   ].join('\n');
 }

@@ -69,6 +69,31 @@ describe('buildSvgString', () => {
     expect(svg).toContain('stroke-linecap="butt"');
   });
 
+  it('wraps each visible layer\'s lines in its own named <g> group', () => {
+    const twoLayerState: PatternState = {
+      ...state,
+      layers: [state.layers[0], { ...state.layers[0], visible: false }, state.layers[0]],
+    };
+    const line: Point[] = [
+      { x: 0, y: 0 },
+      { x: 10, y: 10 },
+    ];
+    const svg = buildSvgString(twoLayerState, [[line], [line], [line]], 300, 200);
+
+    expect(svg).toContain('<g id="layer-0"');
+    expect(svg).toContain('inkscape:label="Layer 1"');
+    expect(svg).not.toContain('id="layer-1"');
+    expect(svg).toContain('<g id="layer-2"');
+    expect(svg).toContain('inkscape:label="Layer 3"');
+
+    const group0Match = svg.match(/<g id="layer-0"[^>]*>([^]*?)<\/g>/);
+    expect(group0Match).not.toBeNull();
+    expect(group0Match![1]).toContain('<polyline');
+
+    const doc = new DOMParser().parseFromString(svg, 'image/svg+xml');
+    expect(doc.querySelector('parsererror')).toBeNull();
+  });
+
   it('includes a linearGradient definition matching the layer colorStart/colorEnd', () => {
     const line: Point[] = [
       { x: 0, y: 0 },
