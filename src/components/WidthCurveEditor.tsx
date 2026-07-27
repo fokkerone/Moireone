@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { widthAt3 } from '../widthProfile';
 import type { LayerParams } from '../types';
 
 const GRAPH_WIDTH = 240;
@@ -20,25 +21,23 @@ function yToValue(y: number): number {
   return VALUE_MIN + clamped * (VALUE_MAX - VALUE_MIN);
 }
 
-function widthAtLocal(t: number, shape: 'linear' | 'parabola', widthMin: number, widthMax: number): number {
-  const distFromCenter = Math.min(1, Math.abs(t - 0.5) * 2);
-  const factor = shape === 'parabola' ? distFromCenter * distFromCenter : distFromCenter;
-  return widthMax - (widthMax - widthMin) * factor;
-}
-
 interface WidthCurveEditorProps {
   layer: LayerParams;
   onUpdate: (patch: Partial<LayerParams>) => void;
 }
 
+type DragPoint = 'start' | 'center' | 'end';
+
 export function WidthCurveEditor({ layer, onUpdate }: WidthCurveEditorProps) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [dragging, setDragging] = useState<'edge' | 'center' | null>(null);
+  const [dragging, setDragging] = useState<DragPoint | null>(null);
 
   const points = Array.from({ length: 41 }, (_, i) => {
     const t = i / 40;
     const x = PADDING + t * (GRAPH_WIDTH - 2 * PADDING);
-    const y = valueToY(widthAtLocal(t, layer.widthCurveShape, layer.widthMin, layer.widthMax));
+    const y = valueToY(
+      widthAt3(t, layer.widthCurveShape, layer.widthStart, layer.widthCenter, layer.widthEnd)
+    );
     return `${x},${y}`;
   }).join(' ');
 
@@ -47,17 +46,28 @@ export function WidthCurveEditor({ layer, onUpdate }: WidthCurveEditorProps) {
     const rect = svgRef.current.getBoundingClientRect();
     const y = e.clientY - rect.top;
     const value = Math.round(yToValue(y) * 10) / 10;
-    if (dragging === 'edge') {
-      onUpdate({ widthMin: Math.min(value, layer.widthMax) });
+    if (dragging === 'start') {
+      onUpdate({ widthStart: value });
+    } else if (dragging === 'center') {
+      onUpdate({ widthCenter: value });
     } else {
-      onUpdate({ widthMax: Math.max(value, layer.widthMin) });
+      onUpdate({ widthEnd: value });
     }
   }
 
-  const edgeX = PADDING;
-  const edgeY = valueToY(layer.widthMin);
+  const startX = PADDING;
+  const startY = valueToY(layer.widthStart);
   const centerX = GRAPH_WIDTH / 2;
-  const centerY = valueToY(layer.widthMax);
+  const centerY = valueToY(layer.widthCenter);
+  const endX = GRAPH_WIDTH - PADDING;
+  const endY = valueToY(layer.widthEnd);
+
+  function beginDrag(point: DragPoint) {
+    return (e: React.PointerEvent<SVGCircleElement>) => {
+      svgRef.current?.setPointerCapture(e.pointerId);
+      setDragging(point);
+    };
+  }
 
   return (
     <div className="mb-2">
@@ -88,15 +98,12 @@ export function WidthCurveEditor({ layer, onUpdate }: WidthCurveEditorProps) {
       >
         <polyline points={points} fill="none" stroke="#ffffff" strokeWidth={2} />
         <circle
-          cx={edgeX}
-          cy={edgeY}
+          cx={startX}
+          cy={startY}
           r={6}
           fill="#5ec8ff"
           className="cursor-ns-resize"
-          onPointerDown={(e) => {
-            svgRef.current?.setPointerCapture(e.pointerId);
-            setDragging('edge');
-          }}
+          onPointerDown={beginDrag('start')}
         />
         <circle
           cx={centerX}
@@ -104,10 +111,15 @@ export function WidthCurveEditor({ layer, onUpdate }: WidthCurveEditorProps) {
           r={6}
           fill="#ff5ea8"
           className="cursor-ns-resize"
-          onPointerDown={(e) => {
-            svgRef.current?.setPointerCapture(e.pointerId);
-            setDragging('center');
-          }}
+          onPointerDown={beginDrag('center')}
+        />
+        <circle
+          cx={endX}
+          cy={endY}
+          r={6}
+          fill="#a8ff5e"
+          className="cursor-ns-resize"
+          onPointerDown={beginDrag('end')}
         />
       </svg>
     </div>
