@@ -48,8 +48,8 @@ describe('computeAnimatedValues', () => {
     // baseAngle: phase 0 -> wave = sin(0) = 0 -> midpoint of [0, 360] = 180
     expect(result.baseAngle).toBe(180);
 
-    // amplitude: phase Math.PI/2 -> wave = sin(Math.PI/2) = 1 -> max = 1400
-    expect(result.amplitude).toBeCloseTo(1400, 10);
+    // amplitude: phase Math.PI/2 -> wave = sin(Math.PI/2) = 1 -> max = 1500
+    expect(result.amplitude).toBeCloseTo(1500, 10);
 
     // noiseScale: phase Math.PI -> wave = sin(Math.PI) ~= 1.2246e-16 (not exactly 0)
     // result = min + (max-min)*(0.5 + 0.5*wave) ~= midpoint of [0.0002, 0.05]

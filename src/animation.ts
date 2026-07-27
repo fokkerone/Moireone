@@ -2,7 +2,7 @@ import type { LayerParams } from './types';
 
 export const ANIMATABLE_RANGES = {
   baseAngle: { min: 0, max: 360 },
-  amplitude: { min: 0, max: 1400 },
+  amplitude: { min: -1500, max: 1500 },
   noiseScale: { min: 0.0002, max: 0.05 },
   zoom: { min: -50, max: 50 },
 } as const;
