@@ -33,7 +33,21 @@ function buildGradient(
 
 export function renderPattern(p: p5, state: PatternState): Point[][][] {
   (p.drawingContext as CanvasRenderingContext2D).globalAlpha = 1;
-  p.background(state.background);
+  {
+    const ctx = p.drawingContext as CanvasRenderingContext2D;
+    if (state.backgroundFillMode === 'gradient') {
+      ctx.fillStyle = buildGradient(
+        ctx,
+        p.width,
+        p.height,
+        state.backgroundGradientAngle,
+        state.backgroundColorStops
+      );
+    } else {
+      ctx.fillStyle = state.backgroundSolidColor;
+    }
+    ctx.fillRect(0, 0, p.width, p.height);
+  }
   p.strokeCap(p.SQUARE);
   const layerLines: Point[][][] = [];
 

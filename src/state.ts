@@ -43,7 +43,13 @@ export function createDefaultLayer(index: number): LayerParams {
 
 export function createDefaultState(): PatternState {
   return {
-    background: '#000000',
+    backgroundFillMode: 'solid',
+    backgroundSolidColor: '#000000',
+    backgroundColorStops: [
+      { id: 'bg-stop-0', position: 0, color: '#000000' },
+      { id: 'bg-stop-1', position: 1, color: '#000000' },
+    ],
+    backgroundGradientAngle: 90,
     layers: [createDefaultLayer(0), createDefaultLayer(1)],
     animationPlaying: false,
     animationSpeed: 1,

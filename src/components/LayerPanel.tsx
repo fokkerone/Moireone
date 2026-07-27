@@ -75,7 +75,10 @@ export function LayerPanel({
         )}
         {layer.fillMode === 'gradient' && (
           <>
-            <ColorStopsEditor layer={layer} onUpdate={onUpdate} />
+            <ColorStopsEditor
+              colorStops={layer.colorStops}
+              onChange={(stops) => onUpdate({ colorStops: stops })}
+            />
             <ParamSlider label="Verlauf-Winkel" min={0} max={360} step={1} value={layer.gradientAngle} onChange={(v) => onUpdate({ gradientAngle: v })} />
           </>
         )}

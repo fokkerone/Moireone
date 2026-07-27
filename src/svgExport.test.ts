@@ -3,7 +3,10 @@ import { buildSvgString } from './svgExport';
 import type { PatternState, Point } from './types';
 
 const state: PatternState = {
-  background: '#111111',
+  backgroundFillMode: 'solid',
+  backgroundSolidColor: '#111111',
+  backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
+  backgroundGradientAngle: 90,
   animationPlaying: false,
   animationSpeed: 1,
   orientation: 'landscape',
@@ -89,7 +92,10 @@ describe('buildSvgString', () => {
 
   it('omits polylines for a hidden layer even when stale cached layerLines contain points for it', () => {
     const hiddenState: PatternState = {
-      background: '#111111',
+      backgroundFillMode: 'solid',
+      backgroundSolidColor: '#111111',
+      backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
+      backgroundGradientAngle: 90,
   animationPlaying: false,
   animationSpeed: 1,
   orientation: 'landscape',
@@ -140,7 +146,10 @@ describe('buildSvgString', () => {
 
   it('renders a filled ribbon <path> instead of a <polyline> when widthCurveEnabled is true', () => {
     const widthState: PatternState = {
-      background: '#111111',
+      backgroundFillMode: 'solid',
+      backgroundSolidColor: '#111111',
+      backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
+      backgroundGradientAngle: 90,
   animationPlaying: false,
   animationSpeed: 1,
   orientation: 'landscape',
@@ -195,7 +204,10 @@ describe('buildSvgString', () => {
 
   it('widthMode "byPosition" makes the ribbon wide near the reference point and narrow far from it', () => {
     const byPositionState: PatternState = {
-      background: '#111111',
+      backgroundFillMode: 'solid',
+      backgroundSolidColor: '#111111',
+      backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
+      backgroundGradientAngle: 90,
   animationPlaying: false,
   animationSpeed: 1,
   orientation: 'landscape',
@@ -293,7 +305,10 @@ describe('buildSvgString', () => {
 
   it('renders a solid-fill layer with the flat color and no linearGradient element', () => {
     const solidState: PatternState = {
-      background: '#111111',
+      backgroundFillMode: 'solid',
+      backgroundSolidColor: '#111111',
+      backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
+      backgroundGradientAngle: 90,
       animationPlaying: false,
       animationSpeed: 1,
   orientation: 'landscape',
@@ -345,7 +360,10 @@ describe('buildSvgString', () => {
 
   it('renders a gradient with three color stops, one <stop> per entry at the correct offsets', () => {
     const threeStopState: PatternState = {
-      background: '#111111',
+      backgroundFillMode: 'solid',
+      backgroundSolidColor: '#111111',
+      backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
+      backgroundGradientAngle: 90,
       animationPlaying: false,
       animationSpeed: 1,
   orientation: 'landscape',
@@ -404,7 +422,10 @@ describe('buildSvgString', () => {
 
   it('widthMode "byAngle" makes the ribbon wide near the axis origin and narrow along the axis direction', () => {
     const byAngleState: PatternState = {
-      background: '#111111',
+      backgroundFillMode: 'solid',
+      backgroundSolidColor: '#111111',
+      backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
+      backgroundGradientAngle: 90,
       animationPlaying: false,
       animationSpeed: 1,
       orientation: 'landscape',
@@ -483,5 +504,33 @@ describe('buildSvgString', () => {
     expect(widthAtOrigin).toBeCloseTo(10, 6);
     // 100+ px away along the axis (at widthRadius) -> full widthEnd (thin).
     expect(widthAtFarEnd).toBeCloseTo(2, 6);
+  });
+
+  it('renders a background gradient with a <linearGradient id="background-gradient"> and a fill referencing it', () => {
+    const gradientBgState: PatternState = {
+      ...state,
+      backgroundFillMode: 'gradient',
+      backgroundColorStops: [
+        { id: 'bg-a', position: 0, color: '#ff0000' },
+        { id: 'bg-b', position: 0.5, color: '#00ff00' },
+        { id: 'bg-c', position: 1, color: '#0000ff' },
+      ],
+      backgroundGradientAngle: 45,
+    };
+    const svg = buildSvgString(gradientBgState, [[]], 300, 200);
+
+    expect(svg).toContain('fill="url(#background-gradient)"');
+    expect(svg).toContain('<linearGradient id="background-gradient"');
+
+    const defsMatch = svg.match(/<linearGradient id="background-gradient"[^]*?<\/linearGradient>/);
+    expect(defsMatch).not.toBeNull();
+    const stopMatches = [...defsMatch![0].matchAll(/<stop offset="([^"]+)" stop-color="([^"]+)" \/>/g)];
+    expect(stopMatches).toHaveLength(3);
+    expect(stopMatches[0][1]).toBe('0%');
+    expect(stopMatches[0][2]).toBe('#ff0000');
+    expect(stopMatches[1][1]).toBe('50%');
+    expect(stopMatches[1][2]).toBe('#00ff00');
+    expect(stopMatches[2][1]).toBe('100%');
+    expect(stopMatches[2][2]).toBe('#0000ff');
   });
 });

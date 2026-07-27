@@ -2,18 +2,18 @@ import { useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { addStop, removeStop, sortStops, updateStop, MIN_COLOR_STOPS } from '../colorStops';
-import type { LayerParams } from '../types';
+import type { ColorStop } from '../types';
 
 interface ColorStopsEditorProps {
-  layer: LayerParams;
-  onUpdate: (patch: Partial<LayerParams>) => void;
+  colorStops: ColorStop[];
+  onChange: (stops: ColorStop[]) => void;
 }
 
 function generateStopId(): string {
   return `stop-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function ColorStopsEditor({ layer, onUpdate }: ColorStopsEditorProps) {
+export function ColorStopsEditor({ colorStops, onChange }: ColorStopsEditorProps) {
   const barRef = useRef<HTMLDivElement>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   // Tracks whether the pointer actually MOVED during the current gesture.
@@ -25,7 +25,7 @@ export function ColorStopsEditor({ layer, onUpdate }: ColorStopsEditorProps) {
   // where the pointer happens to end up.
   const didDragRef = useRef(false);
 
-  const stops = sortStops(layer.colorStops);
+  const stops = sortStops(colorStops);
   const gradientCss = `linear-gradient(to right, ${stops
     .map((s) => `${s.color} ${s.position * 100}%`)
     .join(', ')})`;
@@ -42,14 +42,14 @@ export function ColorStopsEditor({ layer, onUpdate }: ColorStopsEditorProps) {
       return;
     }
     const position = positionFromClientX(e.clientX);
-    onUpdate({ colorStops: addStop(layer.colorStops, generateStopId(), position, '#ffffff') });
+    onChange(addStop(colorStops, generateStopId(), position, '#ffffff'));
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
     if (!draggingId) return;
     didDragRef.current = true;
     const position = positionFromClientX(e.clientX);
-    onUpdate({ colorStops: updateStop(layer.colorStops, draggingId, { position }) });
+    onChange(updateStop(colorStops, draggingId, { position }));
   }
 
   return (
@@ -83,17 +83,15 @@ export function ColorStopsEditor({ layer, onUpdate }: ColorStopsEditorProps) {
             <input
               type="color"
               value={stop.color}
-              onChange={(e) =>
-                onUpdate({ colorStops: updateStop(layer.colorStops, stop.id, { color: e.target.value }) })
-              }
+              onChange={(e) => onChange(updateStop(colorStops, stop.id, { color: e.target.value }))}
               className="h-6 w-10 rounded border"
             />
             <span className="text-xs text-neutral-300">{Math.round(stop.position * 100)}%</span>
             <Button
               size="icon-xs"
               variant="ghost"
-              disabled={layer.colorStops.length <= MIN_COLOR_STOPS}
-              onClick={() => onUpdate({ colorStops: removeStop(layer.colorStops, stop.id) })}
+              disabled={colorStops.length <= MIN_COLOR_STOPS}
+              onClick={() => onChange(removeStop(colorStops, stop.id))}
             >
               <X className="h-3 w-3" />
             </Button>

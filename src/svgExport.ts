@@ -4,7 +4,7 @@ import { buildRibbon } from './ribbon';
 import { sortStops } from './colorStops';
 
 function buildGradientDef(
-  layerIndex: number,
+  gradientId: number | string,
   width: number,
   height: number,
   angleDegrees: number,
@@ -26,7 +26,7 @@ function buildGradientDef(
     .map((stop) => `<stop offset="${stop.position * 100}%" stop-color="${stop.color}" />`)
     .join('');
 
-  return `<linearGradient id="layer-gradient-${layerIndex}" gradientUnits="userSpaceOnUse" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}">${stopEls}</linearGradient>`;
+  return `<linearGradient id="${gradientId}" gradientUnits="userSpaceOnUse" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}">${stopEls}</linearGradient>`;
 }
 
 export function buildSvgString(
@@ -35,15 +35,34 @@ export function buildSvgString(
   width: number,
   height: number
 ): string {
-  const rect = `<rect x="0" y="0" width="${width}" height="${height}" fill="${state.background}" />`;
+  const backgroundPaint =
+    state.backgroundFillMode === 'gradient' ? 'url(#background-gradient)' : state.backgroundSolidColor;
+  const rect = `<rect x="0" y="0" width="${width}" height="${height}" fill="${backgroundPaint}" />`;
 
   const gradientDefs: string[] = [];
+  if (state.backgroundFillMode === 'gradient') {
+    gradientDefs.push(
+      buildGradientDef(
+        'background-gradient',
+        width,
+        height,
+        state.backgroundGradientAngle,
+        state.backgroundColorStops
+      )
+    );
+  }
   const polylines: string[] = [];
   state.layers.forEach((layer, layerIndex) => {
     if (!layer.visible) return;
     if (layer.fillMode === 'gradient') {
       gradientDefs.push(
-        buildGradientDef(layerIndex, width, height, layer.gradientAngle, layer.colorStops)
+        buildGradientDef(
+          `layer-gradient-${layerIndex}`,
+          width,
+          height,
+          layer.gradientAngle,
+          layer.colorStops
+        )
       );
     }
     const paint = layer.fillMode === 'solid' ? layer.solidColor : `url(#layer-gradient-${layerIndex})`;

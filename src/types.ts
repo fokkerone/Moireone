@@ -48,7 +48,10 @@ export interface LayerParams {
 }
 
 export interface PatternState {
-  background: string;
+  backgroundFillMode: 'solid' | 'gradient';
+  backgroundSolidColor: string;
+  backgroundColorStops: ColorStop[];
+  backgroundGradientAngle: number;
   layers: LayerParams[];
   animationPlaying: boolean;
   animationSpeed: number;

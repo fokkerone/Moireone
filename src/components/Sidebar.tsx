@@ -3,11 +3,15 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ParamSlider } from './ParamSlider';
 import { LayerAccordion } from './LayerAccordion';
-import type { LayerParams, PatternState } from '../types';
+import { ColorStopsEditor } from './ColorStopsEditor';
+import type { ColorStop, LayerParams, PatternState } from '../types';
 
 interface SidebarProps {
   state: PatternState;
-  onBackgroundChange: (color: string) => void;
+  onToggleBackgroundFillMode: () => void;
+  onBackgroundSolidColorChange: (color: string) => void;
+  onBackgroundColorStopsChange: (stops: ColorStop[]) => void;
+  onBackgroundGradientAngleChange: (angle: number) => void;
   onGlobalSpacingChange: (spacing: number) => void;
   onGlobalWeightChange: (weight: number) => void;
   onUpdateLayer: (index: number, patch: Partial<LayerParams>) => void;
@@ -22,7 +26,10 @@ interface SidebarProps {
 
 export function Sidebar({
   state,
-  onBackgroundChange,
+  onToggleBackgroundFillMode,
+  onBackgroundSolidColorChange,
+  onBackgroundColorStopsChange,
+  onBackgroundGradientAngleChange,
   onGlobalSpacingChange,
   onGlobalWeightChange,
   onUpdateLayer,
@@ -56,15 +63,39 @@ export function Sidebar({
       <Button variant="outline" className="mb-2 w-full" onClick={onOrientationChange}>
         {state.orientation === 'landscape' ? 'Querformat' : 'Hochformat'}
       </Button>
-      <div className="mb-2 flex items-center gap-2">
-        <label className="w-32 shrink-0 text-xs">Hintergrund</label>
-        <input
-          type="color"
-          value={state.background}
-          onChange={(e) => onBackgroundChange(e.target.value)}
-          className="h-8 w-16 rounded border"
-        />
+      <div className="mb-2">
+        <Button
+          size="sm"
+          variant={state.backgroundFillMode === 'gradient' ? 'default' : 'outline'}
+          onClick={onToggleBackgroundFillMode}
+        >
+          {state.backgroundFillMode === 'solid' ? 'Hintergrund: Vollton' : 'Hintergrund: Verlauf'}
+        </Button>
       </div>
+      {state.backgroundFillMode === 'solid' && (
+        <div className="mb-2 flex items-center gap-2">
+          <label className="w-32 shrink-0 text-xs">Farbe</label>
+          <input
+            type="color"
+            value={state.backgroundSolidColor}
+            onChange={(e) => onBackgroundSolidColorChange(e.target.value)}
+            className="h-8 w-16 rounded border"
+          />
+        </div>
+      )}
+      {state.backgroundFillMode === 'gradient' && (
+        <>
+          <ColorStopsEditor colorStops={state.backgroundColorStops} onChange={onBackgroundColorStopsChange} />
+          <ParamSlider
+            label="Hintergrund-Winkel"
+            min={0}
+            max={360}
+            step={1}
+            value={state.backgroundGradientAngle}
+            onChange={onBackgroundGradientAngleChange}
+          />
+        </>
+      )}
       <ParamSlider label="Abstand" min={4} max={50} step={1} value={spacing} onChange={onGlobalSpacingChange} />
       <ParamSlider label="Linienbreite" min={0.5} max={50} step={0.5} value={weight} onChange={onGlobalWeightChange} />
       <Button

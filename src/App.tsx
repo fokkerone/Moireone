@@ -107,7 +107,21 @@ export function App() {
             orientation: prev.orientation === 'landscape' ? 'portrait' : 'landscape',
           }))
         }
-        onBackgroundChange={(color) => setState((prev) => ({ ...prev, background: color }))}
+        onToggleBackgroundFillMode={() =>
+          setState((prev) => ({
+            ...prev,
+            backgroundFillMode: prev.backgroundFillMode === 'solid' ? 'gradient' : 'solid',
+          }))
+        }
+        onBackgroundSolidColorChange={(color) =>
+          setState((prev) => ({ ...prev, backgroundSolidColor: color }))
+        }
+        onBackgroundColorStopsChange={(stops) =>
+          setState((prev) => ({ ...prev, backgroundColorStops: stops }))
+        }
+        onBackgroundGradientAngleChange={(angle) =>
+          setState((prev) => ({ ...prev, backgroundGradientAngle: angle }))
+        }
         onGlobalSpacingChange={(spacing) => setState((prev) => setGlobalSpacing(prev, spacing))}
         onGlobalWeightChange={(weight) => setState((prev) => setGlobalWeight(prev, weight))}
         onUpdateLayer={updateLayer}
