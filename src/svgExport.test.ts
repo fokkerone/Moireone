@@ -227,7 +227,7 @@ describe('buildSvgString', () => {
     expect(svg).toContain('stroke="none"');
   });
 
-  it('widthMode "byPosition" makes the ribbon wide near the reference point and narrow far from it', () => {
+  it('widthMode "byPosition" keeps a single line a constant width along its length, while different lines get different widths', () => {
     const byPositionState: PatternState = {
       backgroundFillMode: 'solid',
       backgroundSolidColor: '#111111',
@@ -275,10 +275,11 @@ describe('buildSvgString', () => {
     };
 
     // Canvas is 200x200, so the reference point (width/2 + widthCenterX,
-    // height/2 + widthCenterY) is (100, 100). This horizontal line passes
-    // straight through it: x=100 sits exactly at distance 0, x=150 sits at
-    // distance 50 (half the radius), and x=200 sits at distance 100 (at the
-    // radius, i.e. fully at widthMin).
+    // height/2 + widthCenterY) is (100, 100). This line's MIDPOINT (index 1,
+    // x=150) sits at distance 50 (half the radius) from the reference, even
+    // though its endpoints sit at distance 0 and 100 respectively -- under
+    // the new per-line-constant contract, every vertex must get the SAME
+    // width, evaluated once at the midpoint.
     const line: Point[] = [
       { x: 100, y: 100 },
       { x: 150, y: 100 },
@@ -315,17 +316,32 @@ describe('buildSvgString', () => {
     expect(upper1.x).toBeCloseTo(150, 6);
     expect(upper2.x).toBeCloseTo(200, 6);
 
-    // Distance 0 (at the reference point) -> full widthMax.
-    expect(widthAt100).toBeCloseTo(20, 6);
-    // Distance == radius (100) -> full widthMin.
-    expect(widthAt200).toBeCloseTo(2, 6);
-    // Distance == half the radius (50), linear shape -> exact midpoint.
+    // Midpoint distance 50 (half the radius), linear shape -> t=0.75 ->
+    // interpolating from center(20) to end(2): 20 + 0.5*(2-20) = 11.
+    // ALL THREE vertices must share this exact width -- the whole point of
+    // this test is that the line no longer tapers along its own length.
+    expect(widthAt100).toBeCloseTo(11, 6);
     expect(widthAt150).toBeCloseTo(11, 6);
+    expect(widthAt200).toBeCloseTo(11, 6);
 
-    // The ribbon must strictly narrow as distance from the reference point
-    // increases, with no per-line end-tapering (unlike 'alongLine' mode).
-    expect(widthAt100).toBeGreaterThan(widthAt150);
-    expect(widthAt150).toBeGreaterThan(widthAt200);
+    // A second, differently-positioned line gets a DIFFERENT constant width:
+    // this line's midpoint sits exactly at the reference point (distance 0),
+    // so its uniform width should be the full center value (20).
+    const nearLine: Point[] = [
+      { x: 50, y: 100 },
+      { x: 100, y: 100 },
+      { x: 150, y: 100 },
+    ];
+    const svg2 = buildSvgString(byPositionState, [[nearLine]], 200, 200);
+    const pathMatch2 = svg2.match(/<path d="([^"]+)"/);
+    expect(pathMatch2).not.toBeNull();
+    const coords2 = [...pathMatch2![1].matchAll(/(-?\d+\.\d+),(-?\d+\.\d+)/g)].map(([, x, y]) => ({
+      x: Number(x),
+      y: Number(y),
+    }));
+    const [nUpper0, , , , , nLower0] = coords2;
+    const widthOfNearLine = Math.abs(nUpper0.y - nLower0.y);
+    expect(widthOfNearLine).toBeCloseTo(20, 6);
   });
 
   it('renders a solid-fill layer with the flat color and no linearGradient element', () => {
@@ -445,7 +461,7 @@ describe('buildSvgString', () => {
     expect(stopMatches[2][2]).toBe('#0000ff');
   });
 
-  it('widthMode "byAngle" makes the ribbon wide near the axis origin and narrow along the axis direction', () => {
+  it('widthMode "byAngle" keeps a single line a constant width along its length, while different lines get different widths', () => {
     const byAngleState: PatternState = {
       backgroundFillMode: 'solid',
       backgroundSolidColor: '#111111',
@@ -494,13 +510,15 @@ describe('buildSvgString', () => {
 
     // Canvas is 200x200, so the axis origin (width/2 + widthCenterX,
     // height/2 + widthCenterY) is (100, 100). widthAngle=0 means the axis is
-    // horizontal, so this horizontal line lies exactly along it: x=100 is at
-    // the origin (signed distance 0, the tent's center/thick point), and
-    // x=200 is at signed distance 100 == widthRadius (fully at the "end"
-    // extreme, thin).
+    // horizontal. This line's MIDPOINT (index 1, x=150) sits at signed
+    // distance 50 along the axis, even though its endpoints sit at signed
+    // distance 0 and 150 (clamped to the radius) respectively -- under the
+    // new per-line-constant contract, every vertex must get the SAME width,
+    // evaluated once at the midpoint.
     const line: Point[] = [
       { x: 100, y: 100 },
-      { x: 200, y: 100 },
+      { x: 150, y: 100 },
+      { x: 250, y: 100 },
     ];
     const svg = buildSvgString(byAngleState, [[line]], 200, 200);
 
@@ -509,26 +527,49 @@ describe('buildSvgString', () => {
     const d = pathMatch![1];
 
     // buildRibbon's contract: n "upper" points in point order, followed by n
-    // "lower" points in REVERSE point order -- for our 2-point line the 4
-    // ribbon vertices are [upper0, upper1, lower1, lower0].
+    // "lower" points in REVERSE point order -- for our 3-point line the 6
+    // ribbon vertices are [upper0, upper1, upper2, lower2, lower1, lower0].
     const coords = [...d.matchAll(/(-?\d+\.\d+),(-?\d+\.\d+)/g)].map(([, x, y]) => ({
       x: Number(x),
       y: Number(y),
     }));
-    expect(coords).toHaveLength(4);
+    expect(coords).toHaveLength(6);
 
-    const [upper0, upper1, lower1, lower0] = coords;
+    const [upper0, upper1, upper2, lower2, lower1, lower0] = coords;
 
-    const widthAtOrigin = Math.abs(upper0.y - lower0.y);
-    const widthAtFarEnd = Math.abs(upper1.y - lower1.y);
+    const widthAt100 = Math.abs(upper0.y - lower0.y);
+    const widthAt150 = Math.abs(upper1.y - lower1.y);
+    const widthAt250 = Math.abs(upper2.y - lower2.y);
 
     expect(upper0.x).toBeCloseTo(100, 6);
-    expect(upper1.x).toBeCloseTo(200, 6);
+    expect(upper1.x).toBeCloseTo(150, 6);
+    expect(upper2.x).toBeCloseTo(250, 6);
 
-    // Near the axis origin -> full widthCenter (thick).
-    expect(widthAtOrigin).toBeCloseTo(10, 6);
-    // 100+ px away along the axis (at widthRadius) -> full widthEnd (thin).
-    expect(widthAtFarEnd).toBeCloseTo(2, 6);
+    // Midpoint signed distance 50 (half the radius), linear shape -> t=0.75
+    // -> interpolating from center(10) to end(2): 10 + 0.5*(2-10) = 6.
+    // ALL THREE vertices must share this exact width.
+    expect(widthAt100).toBeCloseTo(6, 6);
+    expect(widthAt150).toBeCloseTo(6, 6);
+    expect(widthAt250).toBeCloseTo(6, 6);
+
+    // A second, differently-positioned line gets a DIFFERENT constant width:
+    // this line's midpoint sits exactly at the axis origin (signed distance
+    // 0), so its uniform width should be the full center value (10).
+    const nearLine: Point[] = [
+      { x: 90, y: 100 },
+      { x: 100, y: 100 },
+      { x: 110, y: 100 },
+    ];
+    const svg2 = buildSvgString(byAngleState, [[nearLine]], 200, 200);
+    const pathMatch2 = svg2.match(/<path d="([^"]+)"/);
+    expect(pathMatch2).not.toBeNull();
+    const coords2 = [...pathMatch2![1].matchAll(/(-?\d+\.\d+),(-?\d+\.\d+)/g)].map(([, x, y]) => ({
+      x: Number(x),
+      y: Number(y),
+    }));
+    const [nUpper0, , , , , nLower0] = coords2;
+    const widthOfNearLine = Math.abs(nUpper0.y - nLower0.y);
+    expect(widthOfNearLine).toBeCloseTo(10, 6);
   });
 
   it('renders a background gradient with a <linearGradient id="background-gradient"> and a fill referencing it', () => {

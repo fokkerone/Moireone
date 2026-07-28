@@ -1,5 +1,5 @@
 import type { ColorStop, GradientType, PatternState, Point } from './types';
-import { widthAt3 } from './widthProfile';
+import { computeLineWidths } from './lineWidths';
 import { buildRibbon } from './ribbon';
 import { sortStops } from './colorStops';
 
@@ -80,37 +80,7 @@ export function buildSvgString(
     const polylines: string[] = [];
     for (const line of lines) {
       if (layer.widthCurveEnabled) {
-        const widths = line.map((point, i) => {
-          if (layer.widthMode === 'byPosition') {
-            const centerX = width / 2 + layer.widthCenterX;
-            const centerY = height / 2 + layer.widthCenterY;
-            const dx = point.x - centerX;
-            const dy = point.y - centerY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            const normalizedDistance = Math.min(1, distance / layer.widthRadius);
-            const t = 0.5 + normalizedDistance * 0.5;
-            return widthAt3(t, layer.widthCurveShape, layer.widthStart, layer.widthCenter, layer.widthEnd);
-          }
-          if (layer.widthMode === 'byAngle') {
-            const angleRad = (layer.widthAngle * Math.PI) / 180;
-            const axisX = Math.cos(angleRad);
-            const axisY = Math.sin(angleRad);
-            const originX = width / 2 + layer.widthCenterX;
-            const originY = height / 2 + layer.widthCenterY;
-            const dx = point.x - originX;
-            const dy = point.y - originY;
-            const signedDistance = dx * axisX + dy * axisY;
-            const normalizedT = 0.5 + Math.max(-0.5, Math.min(0.5, signedDistance / (2 * layer.widthRadius)));
-            return widthAt3(normalizedT, layer.widthCurveShape, layer.widthStart, layer.widthCenter, layer.widthEnd);
-          }
-          return widthAt3(
-            i / (line.length - 1 || 1),
-            layer.widthCurveShape,
-            layer.widthStart,
-            layer.widthCenter,
-            layer.widthEnd
-          );
-        });
+        const widths = computeLineWidths(line, layer, width, height);
         const ribbon = buildRibbon(line, widths);
         const d = ribbon
           .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(2)},${p.y.toFixed(2)}`)
