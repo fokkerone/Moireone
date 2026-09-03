@@ -75,6 +75,31 @@ describe('buildSvgString', () => {
     expect(svg).toContain('stroke-linecap="butt"');
   });
 
+  it('ignores an assigned reference image entirely when widthCurveEnabled is false (spec: image modulation only applies when width curves are enabled)', () => {
+    const disabledCurveWithImageState: PatternState = {
+      ...state,
+      layers: [
+        {
+          ...state.layers[0],
+          widthCurveEnabled: false,
+          widthImageEnabled: true,
+          widthImageStrength: 1,
+          widthImageData: { width: 2, height: 2, luminance: new Float32Array([0, 0, 0, 0]) },
+        },
+      ],
+    };
+    const line: Point[] = [
+      { x: 0, y: 0 },
+      { x: 10, y: 10 },
+    ];
+    const svg = buildSvgString(disabledCurveWithImageState, [[line]], 300, 200);
+    // Same output as the plain widthCurveEnabled:false case above: a constant-weight
+    // polyline, not a width-modulated ribbon <path> -- the image has no effect.
+    expect(svg).not.toContain('<path');
+    expect(svg).toContain('points="0.00,0.00 10.00,10.00"');
+    expect(svg).toContain('stroke-width="2"');
+  });
+
   it('wraps each visible layer\'s lines in its own named <g> group', () => {
     const twoLayerState: PatternState = {
       ...state,

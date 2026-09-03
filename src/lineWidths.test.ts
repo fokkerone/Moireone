@@ -311,6 +311,33 @@ describe('computeLineWidths with reference-image brightness scaling', () => {
     expect(widths[2]).toBeCloseTo(0.1, 6); // light -> floored
     expect(widths[0]).not.toBeCloseTo(widths[2], 1);
   });
+
+  it('a reference image on one layer does not affect a second, independent layer with no image (spec: Per-layer reference image)', () => {
+    const line: Point[] = [{ x: 3.5, y: 0.5 }]; // light region of twoByTwoImage -> would floor if applied
+    const layerWithImage = makeLayer({
+      widthMode: 'alongLine',
+      widthStart: 10,
+      widthCenter: 10,
+      widthEnd: 10,
+      widthImageEnabled: true,
+      widthImageInvert: false,
+      widthImageStrength: 1,
+      widthImageData: twoByTwoImage,
+    });
+    const layerWithoutImage = makeLayer({
+      widthMode: 'alongLine',
+      widthStart: 10,
+      widthCenter: 10,
+      widthEnd: 10,
+      // widthImageEnabled/widthImageData default to false/null (no image assigned)
+    });
+
+    const widthsWithImage = computeLineWidths(line, layerWithImage, CANVAS, CANVAS);
+    const widthsWithoutImage = computeLineWidths(line, layerWithoutImage, CANVAS, CANVAS);
+
+    expect(widthsWithImage[0]).toBeCloseTo(0.1, 6); // reduced by the image
+    expect(widthsWithoutImage[0]).toBeCloseTo(10, 6); // unaffected, full base width
+  });
 });
 
 describe('sampleImageLuminance', () => {

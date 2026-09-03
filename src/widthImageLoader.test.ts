@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rgbaToLuminance, computeDownscaledSize } from './widthImageLoader';
+import { rgbaToLuminance, computeDownscaledSize, loadReferenceImage } from './widthImageLoader';
 
 describe('rgbaToLuminance', () => {
   it('pure white -> 1', () => {
@@ -34,5 +34,12 @@ describe('computeDownscaledSize', () => {
 
   it('leaves an image already under the cap unchanged', () => {
     expect(computeDownscaledSize(800, 600, 1024)).toEqual({ width: 800, height: 600 });
+  });
+});
+
+describe('loadReferenceImage', () => {
+  it('rejects a non-image file before touching any DOM image-decoding API (spec: Error Behavior)', async () => {
+    const textFile = new File(['not an image'], 'notes.txt', { type: 'text/plain' });
+    await expect(loadReferenceImage(textFile)).rejects.toThrow(/not an image/i);
   });
 });
