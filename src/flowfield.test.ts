@@ -29,6 +29,10 @@ const baseLayer: LayerParams = {
   widthCenterY: 0,
   widthRadius: 400,
   widthAngle: 0,
+  widthImageEnabled: false,
+  widthImageInvert: false,
+  widthImageStrength: 1,
+  widthImageData: null,
 };
 
 describe('lineOffset', () => {

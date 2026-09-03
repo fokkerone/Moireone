@@ -29,6 +29,10 @@ const straightLayer: LayerParams = {
   widthCenterY: 0,
   widthRadius: 400,
   widthAngle: 0,
+  widthImageEnabled: false,
+  widthImageInvert: false,
+  widthImageStrength: 1,
+  widthImageData: null,
 };
 
 const neutralNoise: NoiseFn = () => 0.5;
@@ -98,6 +102,10 @@ describe('generateLayerLines', () => {
       widthCenterY: 0,
       widthRadius: 400,
       widthAngle: 0,
+      widthImageEnabled: false,
+      widthImageInvert: false,
+      widthImageStrength: 1,
+      widthImageData: null,
     };
 
     // Deterministic, non-constant noise: the displacement genuinely varies
@@ -188,6 +196,10 @@ describe('generateLayerLines', () => {
       widthCenterY: 0,
       widthRadius: 400,
       widthAngle: 0,
+      widthImageEnabled: false,
+      widthImageInvert: false,
+      widthImageStrength: 1,
+      widthImageData: null,
     };
     const offsetLayer: LayerParams = { ...baseLayer, offsetX: 50, offsetY: 30 };
 
@@ -267,6 +279,10 @@ describe('generateLayerLines', () => {
       widthCenterY: 0,
       widthRadius: 400,
       widthAngle: 0,
+      widthImageEnabled: false,
+      widthImageInvert: false,
+      widthImageStrength: 1,
+      widthImageData: null,
     };
 
     // Deterministic noise keyed on the base point's x coordinate (which is
@@ -362,6 +378,10 @@ describe('generateLayerLines', () => {
       widthCenterY: 0,
       widthRadius: 400,
       widthAngle: 0,
+      widthImageEnabled: false,
+      widthImageInvert: false,
+      widthImageStrength: 1,
+      widthImageData: null,
     };
 
     const neutralNoise: NoiseFn = () => 0.5;
@@ -444,6 +464,10 @@ describe('generateLayerLines', () => {
       widthCenterY: 0,
       widthRadius: 400,
       widthAngle: 0,
+      widthImageEnabled: false,
+      widthImageInvert: false,
+      widthImageStrength: 1,
+      widthImageData: null,
     };
 
     const texturedLayer: LayerParams = { ...baseLayer, textureAmplitude: 50 };

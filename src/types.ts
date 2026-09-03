@@ -48,6 +48,10 @@ export interface LayerParams {
   macroRadius: number;
   textureAmplitude: number;
   animationPaused: boolean;
+  widthImageEnabled: boolean;
+  widthImageInvert: boolean;
+  widthImageStrength: number;
+  widthImageData: { width: number; height: number; luminance: Float32Array } | null;
 }
 
 export interface PatternState {
