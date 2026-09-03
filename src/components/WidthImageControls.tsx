@@ -23,13 +23,13 @@ export function WidthImageControls({ layer, onUpdate }: WidthImageControlsProps)
 
   return (
     <div className="mb-2">
-      <div className="mb-2 flex items-center gap-2">
+      <div className="mb-2 flex flex-wrap items-center gap-2">
         <label className="w-32 shrink-0 text-xs">Referenzbild</label>
         <input
           type="file"
           accept="image/*"
           onChange={handleFileChange}
-          className="text-xs"
+          className="w-40 min-w-0 shrink text-xs"
         />
         {layer.widthImageData && (
           <Button
