@@ -51,3 +51,36 @@ export function computeLineWidths(
 
   return line.map((_, i) => widthFromNormalizedT(layer, i / (line.length - 1 || 1)));
 }
+
+/**
+ * Sample a reference image's luminance at a canvas position, using "cover"
+ * fit: the image is scaled uniformly (preserving aspect ratio) to fully
+ * cover the canvas, centered, with overflow cropped. Returns the raw
+ * luminance (0..1) at the nearest image pixel to the mapped position; does
+ * NOT apply any invert flag (that's the caller's responsibility).
+ *
+ * The computed pixel index is clamped to the image's bounds so that
+ * floating-point rounding at canvas edges can never index outside the
+ * luminance array.
+ */
+export function sampleImageLuminance(
+  imageData: { width: number; height: number; luminance: Float32Array },
+  x: number,
+  y: number,
+  canvasWidth: number,
+  canvasHeight: number
+): number {
+  const scale = Math.max(canvasWidth / imageData.width, canvasHeight / imageData.height);
+  const scaledWidth = imageData.width * scale;
+  const scaledHeight = imageData.height * scale;
+  const offsetX = (canvasWidth - scaledWidth) / 2;
+  const offsetY = (canvasHeight - scaledHeight) / 2;
+
+  const imgX = (x - offsetX) / scale;
+  const imgY = (y - offsetY) / scale;
+
+  const col = Math.min(imageData.width - 1, Math.max(0, Math.floor(imgX)));
+  const row = Math.min(imageData.height - 1, Math.max(0, Math.floor(imgY)));
+
+  return imageData.luminance[row * imageData.width + col];
+}
