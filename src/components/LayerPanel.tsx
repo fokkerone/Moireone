@@ -102,8 +102,6 @@ export function LayerPanel({
           </>
         )}
         <ParamSlider label="Winkel" min={ANIMATABLE_RANGES.baseAngle.min} max={ANIMATABLE_RANGES.baseAngle.max} step={1} value={layer.baseAngle} onChange={(v) => onUpdate({ baseAngle: v })} />
-        <ParamSlider label="Noise-Scale (Textur)" min={ANIMATABLE_RANGES.noiseScale.min} max={ANIMATABLE_RANGES.noiseScale.max} step={0.0002} value={layer.noiseScale} onChange={(v) => onUpdate({ noiseScale: v })} />
-        <ParamSlider label="Zoom (Textur)" min={ANIMATABLE_RANGES.zoom.min} max={ANIMATABLE_RANGES.zoom.max} step={1} value={layer.zoom} onChange={(v) => onUpdate({ zoom: v })} />
 
         <div className="mb-2 flex gap-1">
           <Button

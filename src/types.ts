@@ -24,13 +24,11 @@ export interface LayerParams {
   gradientAngle: number;
   gradientType: GradientType;
   baseAngle: number;
-  noiseScale: number;
   amplitude: number;
   spacing: number;
   weight: number;
   alpha: number;
   seed: number;
-  zoom: number;
   visible: boolean;
   offsetX: number;
   offsetY: number;

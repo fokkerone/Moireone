@@ -1,0 +1,16 @@
+{
+  "sources": [
+    {
+      "slug": "image-reference-line-width",
+      "ingested_at": "2026-09-03T12:35:00+02:00",
+      "pages_created": [
+        "decisions/image-width-modulation-approach",
+        "decisions/branch-topology",
+        "patterns/precomputed-brightness-lookup",
+        "ui/layer-panel-subcomponents",
+        "image-reference-line-width/Home"
+      ],
+      "pages_updated": []
+    }
+  ]
+}

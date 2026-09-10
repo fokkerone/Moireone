@@ -12,13 +12,11 @@ function makeLayer(overrides: Partial<LayerParams> = {}): LayerParams {
     ],
     gradientAngle: 90, gradientType: 'linear',
     baseAngle: 0,
-    noiseScale: 0.001,
     amplitude: 300,
     spacing: 14,
     weight: 1.5,
     alpha: 0.6,
     seed: 0,
-    zoom: 1,
     visible: true,
     offsetX: 0,
     offsetY: 0,
@@ -54,17 +52,6 @@ describe('computeAnimatedValues', () => {
 
     // amplitude: phase Math.PI/2 -> wave = sin(Math.PI/2) = 1 -> max = 1500
     expect(result.amplitude).toBeCloseTo(1500, 10);
-
-    // noiseScale: phase Math.PI -> wave = sin(Math.PI) ~= 1.2246e-16 (not exactly 0)
-    // result = min + (max-min)*(0.5 + 0.5*wave) ~= midpoint of [0.0002, 0.05]
-    const { min: nsMin, max: nsMax } = ANIMATABLE_RANGES.noiseScale;
-    const expectedNoiseScale = nsMin + (nsMax - nsMin) * (0.5 + 0.5 * Math.sin(Math.PI));
-    expect(result.noiseScale).toBeCloseTo(expectedNoiseScale, 10);
-    // also close to the true midpoint given how tiny the epsilon is
-    expect(result.noiseScale).toBeCloseTo((nsMin + nsMax) / 2, 6);
-
-    // zoom: phase 3*Math.PI/2 -> wave = sin(3*Math.PI/2) = -1 -> min = -50
-    expect(result.zoom).toBeCloseTo(-50, 10);
   });
 
   it('stays within [min, max] inclusive for every field across many elapsed times and speeds', () => {

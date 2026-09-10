@@ -3,8 +3,6 @@ import type { LayerParams } from './types';
 export const ANIMATABLE_RANGES = {
   baseAngle: { min: 0, max: 360 },
   amplitude: { min: -1500, max: 1500 },
-  noiseScale: { min: 0.0002, max: 0.05 },
-  zoom: { min: -50, max: 50 },
 } as const;
 
 export type AnimatableField = keyof typeof ANIMATABLE_RANGES;
@@ -14,8 +12,6 @@ const BASE_PERIOD_MS = 20000;
 const FIELD_PHASE_OFFSETS: Record<AnimatableField, number> = {
   baseAngle: 0,
   amplitude: Math.PI / 2,
-  noiseScale: Math.PI,
-  zoom: (3 * Math.PI) / 2,
 };
 
 function oscillate(

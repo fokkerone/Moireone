@@ -3,6 +3,12 @@ import { macroShapeOffset } from './macroShape';
 
 const STEP_LENGTH = 4;
 
+// Spatial frequency of the noise used for the optional per-layer texture
+// displacement. Previously exposed as adjustable `noiseScale` / `zoom`
+// layer params; those controls were removed and this fixed value (the old
+// default) is used instead.
+const TEXTURE_NOISE_SCALE = 0.001;
+
 function toRadians(degrees: number): number {
   return (degrees * Math.PI) / 180;
 }
@@ -44,8 +50,6 @@ export function generateLayerLines(
   const baseXs = new Array<number>(numSteps);
   const baseYs = new Array<number>(numSteps);
   const displacements = new Array<number>(numSteps);
-  const safeZoom = layer.zoom === 0 ? 1 : layer.zoom;
-  const effectiveNoiseScale = layer.noiseScale / safeZoom;
   for (let s = 0; s < numSteps; s++) {
     const bx = startX + travelX * STEP_LENGTH * s;
     const by = startY + travelY * STEP_LENGTH * s;
@@ -54,7 +58,7 @@ export function generateLayerLines(
     const distanceFromCenter = Math.abs(s * STEP_LENGTH - diagonal);
     const macroOffset = macroShapeOffset(layer.macroShape, distanceFromCenter, layer.macroRadius, layer.amplitude);
     const textureOffset = layer.textureAmplitude > 0
-      ? layer.textureAmplitude * (noise(bx * effectiveNoiseScale, by * effectiveNoiseScale, layer.seed) - 0.5) * 2
+      ? layer.textureAmplitude * (noise(bx * TEXTURE_NOISE_SCALE, by * TEXTURE_NOISE_SCALE, layer.seed) - 0.5) * 2
       : 0;
     displacements[s] = macroOffset + textureOffset;
   }
