@@ -5,13 +5,11 @@ import type { LayerParams, NoiseFn } from './types';
 const straightLayer: LayerParams = {
   fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90, gradientType: 'linear',
   baseAngle: 0,
-  noiseScale: 0.01,
   amplitude: 0,
   spacing: 20,
   weight: 1,
   alpha: 1,
   seed: 0,
-  zoom: 1,
   visible: true,
   offsetX: 0,
   offsetY: 0,
@@ -74,13 +72,11 @@ describe('generateLayerLines', () => {
     const curvingLayer: LayerParams = {
       fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90, gradientType: 'linear',
       baseAngle: 0,
-      noiseScale: 0.01,
       amplitude: 50,
       spacing: 40,
       weight: 1,
       alpha: 1,
       seed: 0,
-      zoom: 1,
       visible: true,
       offsetX: 0,
       offsetY: 0,
@@ -164,13 +160,11 @@ describe('generateLayerLines', () => {
     const baseLayer: LayerParams = {
       fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90, gradientType: 'linear',
       baseAngle: 0,
-      noiseScale: 0.01,
       amplitude: 0,
       spacing: 20,
       weight: 1,
       alpha: 1,
       seed: 0,
-      zoom: 1,
       visible: true,
       offsetX: 0,
       offsetY: 0,
@@ -238,18 +232,16 @@ describe('generateLayerLines', () => {
     const bounceLayer: LayerParams = {
       fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90, gradientType: 'linear',
       baseAngle: 0,
-      // noiseScale 1 / zoom 1 => effective scale is 1, so the noise
-      // function receives the RAW base-point x coordinate unmodified,
-      // letting us key deterministic phases directly off it. amplitude is 0
+      // The texture noise is sampled at `baseX * TEXTURE_NOISE_SCALE`
+      // (0.001), so the mock below keys its phases off the SCALED x
+      // coordinate (raw x 300 -> 0.3, raw x 500 -> 0.5). amplitude is 0
       // (no macro-shape contribution) so the texture layer alone drives the
       // displacement in this test.
-      noiseScale: 1,
       amplitude: 0,
       spacing: 40,
       weight: 1,
       alpha: 1,
       seed: 0,
-      zoom: 1,
       visible: true,
       offsetX: 0,
       offsetY: 0,
@@ -269,17 +261,16 @@ describe('generateLayerLines', () => {
       widthAngle: 0,
     };
 
-    // Deterministic noise keyed on the base point's x coordinate (which is
-    // a pure function of position in this model, unlike the old per-step
-    // heading-integration model):
-    //   x < 300        -> neutral (0.5): texture offset 0, line in-bounds
-    //   300 <= x < 500 -> full positive (1): texture offset +150, y = 250,
-    //                     which is outside height=200 -> line exits
-    //   x >= 500       -> neutral (0.5) again: texture offset 0, line
-    //                     re-enters at y = 100
-    const bouncingNoise: NoiseFn = (x) => {
-      if (x < 300) return 0.5;
-      if (x < 500) return 1;
+    // Deterministic noise keyed on the SCALED x coordinate the generator
+    // passes in (baseX * 0.001), which is a pure function of position:
+    //   rawX < 300        -> neutral (0.5): texture offset 0, line in-bounds
+    //   300 <= rawX < 500 -> full positive (1): texture offset +150, y = 250,
+    //                        which is outside height=200 -> line exits
+    //   rawX >= 500       -> neutral (0.5) again: texture offset 0, line
+    //                        re-enters at y = 100
+    const bouncingNoise: NoiseFn = (scaledX) => {
+      if (scaledX < 0.3) return 0.5;
+      if (scaledX < 0.5) return 1;
       return 0.5;
     };
 
@@ -338,13 +329,11 @@ describe('generateLayerLines', () => {
     const macroLayer: LayerParams = {
       fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90, gradientType: 'linear',
       baseAngle: 0,
-      noiseScale: 0.01,
       amplitude: 80,
       spacing: 40,
       weight: 1,
       alpha: 1,
       seed: 0,
-      zoom: 1,
       visible: true,
       offsetX: 0,
       offsetY: 0,
@@ -420,13 +409,11 @@ describe('generateLayerLines', () => {
     const baseLayer: LayerParams = {
       fillMode: 'gradient', solidColor: '#000000', colorStops: [{ id: 's0', position: 0, color: '#000000' }, { id: 's1', position: 1, color: '#ffffff' }], gradientAngle: 90, gradientType: 'linear',
       baseAngle: 0,
-      noiseScale: 0.01,
       amplitude: 80,
       spacing: 10000, // keep only the center line so there is exactly one to compare
       weight: 1,
       alpha: 1,
       seed: 0,
-      zoom: 1,
       visible: true,
       offsetX: 0,
       offsetY: 0,
