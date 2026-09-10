@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildSvgString } from './svgExport';
+import { computeLineWidths } from './lineWidths';
+import { buildRibbon } from './ribbon';
 import type { PatternState, Point } from './types';
 
 const state: PatternState = {
@@ -44,6 +46,10 @@ const state: PatternState = {
       widthCenterY: 0,
       widthRadius: 400,
       widthAngle: 0,
+      widthImageEnabled: false,
+      widthImageInvert: false,
+      widthImageStrength: 1,
+      widthImageData: null,
     },
   ],
 };
@@ -67,6 +73,31 @@ describe('buildSvgString', () => {
     expect(svg).toContain('stroke-opacity="0.5"');
     expect(svg).toContain('stroke-width="2"');
     expect(svg).toContain('stroke-linecap="butt"');
+  });
+
+  it('ignores an assigned reference image entirely when widthCurveEnabled is false (spec: image modulation only applies when width curves are enabled)', () => {
+    const disabledCurveWithImageState: PatternState = {
+      ...state,
+      layers: [
+        {
+          ...state.layers[0],
+          widthCurveEnabled: false,
+          widthImageEnabled: true,
+          widthImageStrength: 1,
+          widthImageData: { width: 2, height: 2, luminance: new Float32Array([0, 0, 0, 0]) },
+        },
+      ],
+    };
+    const line: Point[] = [
+      { x: 0, y: 0 },
+      { x: 10, y: 10 },
+    ];
+    const svg = buildSvgString(disabledCurveWithImageState, [[line]], 300, 200);
+    // Same output as the plain widthCurveEnabled:false case above: a constant-weight
+    // polyline, not a width-modulated ribbon <path> -- the image has no effect.
+    expect(svg).not.toContain('<path');
+    expect(svg).toContain('points="0.00,0.00 10.00,10.00"');
+    expect(svg).toContain('stroke-width="2"');
   });
 
   it('wraps each visible layer\'s lines in its own named <g> group', () => {
@@ -158,6 +189,10 @@ describe('buildSvgString', () => {
           widthCenterY: 0,
           widthRadius: 400,
           widthAngle: 0,
+          widthImageEnabled: false,
+          widthImageInvert: false,
+          widthImageStrength: 1,
+          widthImageData: null,
         },
       ],
     };
@@ -212,6 +247,10 @@ describe('buildSvgString', () => {
           widthCenterY: 0,
           widthRadius: 400,
           widthAngle: 0,
+          widthImageEnabled: false,
+          widthImageInvert: false,
+          widthImageStrength: 1,
+          widthImageData: null,
         },
       ],
     };
@@ -225,6 +264,82 @@ describe('buildSvgString', () => {
     expect(svg).toContain('<path');
     expect(svg).toContain('fill="url(#layer-gradient-0)"');
     expect(svg).toContain('stroke="none"');
+  });
+
+  it('with image-reference width modulation enabled, export widths are identical to computeLineWidths (preview/export parity)', () => {
+    const canvasWidth = 300;
+    const canvasHeight = 200;
+    // 2x2 luminance grid: distinct known values so the modulation actually
+    // varies per vertex rather than degenerating to a constant scale.
+    const widthImageData = {
+      width: 2,
+      height: 2,
+      luminance: new Float32Array([0, 1, 1, 0]),
+    };
+    const imageLayer = {
+      fillMode: 'solid' as const,
+      solidColor: '#ff0000',
+      colorStops: [],
+      gradientAngle: 0,
+      gradientType: 'linear' as const,
+      baseAngle: 0,
+      noiseScale: 0.01,
+      amplitude: 50,
+      spacing: 10,
+      weight: 2,
+      alpha: 1,
+      seed: 0,
+      zoom: 1,
+      visible: true,
+      offsetX: 0,
+      offsetY: 0,
+      widthCurveEnabled: true,
+      widthCurveShape: 'linear' as const,
+      widthStart: 2,
+      widthCenter: 8,
+      widthEnd: 2,
+      macroShape: 'smooth' as const,
+      macroRadius: 800,
+      textureAmplitude: 0,
+      animationPaused: false,
+      widthMode: 'alongLine' as const,
+      widthCenterX: 0,
+      widthCenterY: 0,
+      widthRadius: 400,
+      widthAngle: 0,
+      widthImageEnabled: true,
+      widthImageInvert: false,
+      widthImageStrength: 1,
+      widthImageData,
+    };
+    const imageState: PatternState = {
+      backgroundFillMode: 'solid',
+      backgroundSolidColor: '#111111',
+      backgroundColorStops: [{ id: 'bg0', position: 0, color: '#111111' }, { id: 'bg1', position: 1, color: '#111111' }],
+      backgroundGradientAngle: 90,
+      backgroundGradientType: 'linear',
+      animationPlaying: false,
+      animationSpeed: 1,
+      orientation: 'landscape',
+      layers: [imageLayer],
+    };
+    const line: Point[] = [
+      { x: 0, y: 0 },
+      { x: 100, y: 100 },
+      { x: 299, y: 199 },
+    ];
+
+    const svg = buildSvgString(imageState, [[line]], canvasWidth, canvasHeight);
+
+    // Compute the expected path independently via the same functions the
+    // live render path (render.ts) uses, and assert the SVG export used
+    // exactly this data — no separate/divergent width computation.
+    const expectedWidths = computeLineWidths(line, imageLayer, canvasWidth, canvasHeight);
+    const expectedRibbon = buildRibbon(line, expectedWidths);
+    const expectedD =
+      expectedRibbon.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ') + ' Z';
+
+    expect(svg).toContain(`<path d="${expectedD}"`);
   });
 
   it('widthMode "byPosition" keeps a single line a constant width along its length, while different lines get different widths', () => {
@@ -270,6 +385,10 @@ describe('buildSvgString', () => {
           widthCenterY: 0,
           widthRadius: 100,
           widthAngle: 0,
+          widthImageEnabled: false,
+          widthImageInvert: false,
+          widthImageStrength: 1,
+          widthImageData: null,
         },
       ],
     };
@@ -387,6 +506,10 @@ describe('buildSvgString', () => {
           widthCenterY: 0,
           widthRadius: 400,
           widthAngle: 0,
+          widthImageEnabled: false,
+          widthImageInvert: false,
+          widthImageStrength: 1,
+          widthImageData: null,
         },
       ],
     };
@@ -443,6 +566,10 @@ describe('buildSvgString', () => {
           widthCenterY: 0,
           widthRadius: 400,
           widthAngle: 0,
+          widthImageEnabled: false,
+          widthImageInvert: false,
+          widthImageStrength: 1,
+          widthImageData: null,
         },
       ],
     };
@@ -504,6 +631,10 @@ describe('buildSvgString', () => {
           widthCenterY: 0,
           widthRadius: 100,
           widthAngle: 0,
+          widthImageEnabled: false,
+          widthImageInvert: false,
+          widthImageStrength: 1,
+          widthImageData: null,
         },
       ],
     };

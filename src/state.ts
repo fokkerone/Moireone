@@ -39,6 +39,10 @@ export function createDefaultLayer(index: number): LayerParams {
     macroRadius: 800,
     textureAmplitude: 0,
     animationPaused: false,
+    widthImageEnabled: false,
+    widthImageInvert: false,
+    widthImageStrength: 1,
+    widthImageData: null,
   };
 }
 

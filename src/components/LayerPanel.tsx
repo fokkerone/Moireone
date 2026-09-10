@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ParamSlider } from './ParamSlider';
 import { WidthCurveEditor } from './WidthCurveEditor';
+import { WidthImageControls } from './WidthImageControls';
 import { ColorStopsEditor } from './ColorStopsEditor';
 import type { LayerParams } from '../types';
 import { ANIMATABLE_RANGES } from '../animation';
@@ -179,6 +180,7 @@ export function LayerPanel({
               <ParamSlider label="Dicke-Winkel" min={0} max={360} step={1} value={layer.widthAngle} onChange={(v) => onUpdate({ widthAngle: v })} />
             )}
             <WidthCurveEditor layer={layer} onUpdate={onUpdate} />
+            <WidthImageControls layer={layer} onUpdate={onUpdate} />
           </>
         )}
       </AccordionContent>
