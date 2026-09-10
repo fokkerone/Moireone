@@ -129,8 +129,8 @@ export function LayerPanel({
         <ParamSlider label="Amplitude" min={ANIMATABLE_RANGES.amplitude.min} max={ANIMATABLE_RANGES.amplitude.max} step={5} value={layer.amplitude} onChange={(v) => onUpdate({ amplitude: v })} />
         <ParamSlider label="Radius" min={100} max={3000} step={10} value={layer.macroRadius} onChange={(v) => onUpdate({ macroRadius: v })} />
         <ParamSlider label="Textur-Stärke" min={0} max={200} step={5} value={layer.textureAmplitude} onChange={(v) => onUpdate({ textureAmplitude: v })} />
-        <ParamSlider label="Position X" min={-500} max={500} step={10} value={layer.offsetX} onChange={(v) => onUpdate({ offsetX: v })} />
-        <ParamSlider label="Position Y" min={-500} max={500} step={10} value={layer.offsetY} onChange={(v) => onUpdate({ offsetY: v })} />
+        <ParamSlider label="Position X" min={-1000} max={1000} step={10} value={layer.offsetX} onChange={(v) => onUpdate({ offsetX: v })} />
+        <ParamSlider label="Position Y" min={-1000} max={1000} step={10} value={layer.offsetY} onChange={(v) => onUpdate({ offsetY: v })} />
         <ParamSlider label="Deckkraft" min={0} max={1} step={0.01} value={layer.alpha} onChange={(v) => onUpdate({ alpha: v })} />
 
         <div className="mb-2">
