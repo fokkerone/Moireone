@@ -48,6 +48,10 @@ const state: PatternState = {
       widthImageInvert: false,
       widthImageStrength: 1,
       widthImageData: null,
+      fieldPoleDistance: 200,
+      fieldStrength: 0.6,
+      radialOvality: 1,
+      radialTwist: 0.5,
     },
   ],
 };
@@ -189,6 +193,10 @@ describe('buildSvgString', () => {
           widthImageInvert: false,
           widthImageStrength: 1,
           widthImageData: null,
+          fieldPoleDistance: 200,
+          fieldStrength: 0.6,
+          radialOvality: 1,
+          radialTwist: 0.5,
         },
       ],
     };
@@ -245,6 +253,10 @@ describe('buildSvgString', () => {
           widthImageInvert: false,
           widthImageStrength: 1,
           widthImageData: null,
+          fieldPoleDistance: 200,
+          fieldStrength: 0.6,
+          radialOvality: 1,
+          radialTwist: 0.5,
         },
       ],
     };
@@ -303,6 +315,10 @@ describe('buildSvgString', () => {
       widthImageInvert: false,
       widthImageStrength: 1,
       widthImageData,
+      fieldPoleDistance: 200,
+      fieldStrength: 0.6,
+      radialOvality: 1,
+      radialTwist: 0.5,
     };
     const imageState: PatternState = {
       backgroundFillMode: 'solid',
@@ -379,6 +395,10 @@ describe('buildSvgString', () => {
           widthImageInvert: false,
           widthImageStrength: 1,
           widthImageData: null,
+          fieldPoleDistance: 200,
+          fieldStrength: 0.6,
+          radialOvality: 1,
+          radialTwist: 0.5,
         },
       ],
     };
@@ -498,6 +518,10 @@ describe('buildSvgString', () => {
           widthImageInvert: false,
           widthImageStrength: 1,
           widthImageData: null,
+          fieldPoleDistance: 200,
+          fieldStrength: 0.6,
+          radialOvality: 1,
+          radialTwist: 0.5,
         },
       ],
     };
@@ -556,6 +580,10 @@ describe('buildSvgString', () => {
           widthImageInvert: false,
           widthImageStrength: 1,
           widthImageData: null,
+          fieldPoleDistance: 200,
+          fieldStrength: 0.6,
+          radialOvality: 1,
+          radialTwist: 0.5,
         },
       ],
     };
@@ -619,6 +647,10 @@ describe('buildSvgString', () => {
           widthImageInvert: false,
           widthImageStrength: 1,
           widthImageData: null,
+          fieldPoleDistance: 200,
+          fieldStrength: 0.6,
+          radialOvality: 1,
+          radialTwist: 0.5,
         },
       ],
     };

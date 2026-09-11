@@ -42,10 +42,17 @@ export interface LayerParams {
   widthCenterY: number;
   widthRadius: number;
   widthAngle: number;
-  macroShape: 'circle' | 'parabola' | 'smooth';
+  macroShape: 'circle' | 'parabola' | 'smooth' | 'fieldLines' | 'radial';
   macroRadius: number;
   textureAmplitude: number;
   animationPaused: boolean;
+  // 'fieldLines' macro shape: two-pole (dipole) field-line tracing.
+  fieldPoleDistance: number;
+  fieldStrength: number;
+  // 'radial' macro shape: spiral rays growing outward from the layer
+  // center (offsetX/offsetY), squashed into an oval and twisted with radius.
+  radialOvality: number;
+  radialTwist: number;
   widthImageEnabled: boolean;
   widthImageInvert: boolean;
   widthImageStrength: number;

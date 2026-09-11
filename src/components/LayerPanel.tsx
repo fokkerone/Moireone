@@ -103,7 +103,7 @@ export function LayerPanel({
         )}
         <ParamSlider label="Winkel" min={ANIMATABLE_RANGES.baseAngle.min} max={ANIMATABLE_RANGES.baseAngle.max} step={1} value={layer.baseAngle} onChange={(v) => onUpdate({ baseAngle: v })} />
 
-        <div className="mb-2 flex gap-1">
+        <div className="mb-2 flex flex-wrap gap-1">
           <Button
             size="sm"
             variant={layer.macroShape === 'circle' ? 'default' : 'outline'}
@@ -125,10 +125,41 @@ export function LayerPanel({
           >
             Sanfte Kurve
           </Button>
+          <Button
+            size="sm"
+            variant={layer.macroShape === 'fieldLines' ? 'default' : 'outline'}
+            onClick={() => onUpdate({ macroShape: 'fieldLines' })}
+          >
+            Feldlinien
+          </Button>
+          <Button
+            size="sm"
+            variant={layer.macroShape === 'radial' ? 'default' : 'outline'}
+            onClick={() => onUpdate({ macroShape: 'radial' })}
+          >
+            Strahlen
+          </Button>
         </div>
-        <ParamSlider label="Amplitude" min={ANIMATABLE_RANGES.amplitude.min} max={ANIMATABLE_RANGES.amplitude.max} step={5} value={layer.amplitude} onChange={(v) => onUpdate({ amplitude: v })} />
-        <ParamSlider label="Radius" min={100} max={3000} step={10} value={layer.macroRadius} onChange={(v) => onUpdate({ macroRadius: v })} />
-        <ParamSlider label="Textur-Stärke" min={0} max={200} step={5} value={layer.textureAmplitude} onChange={(v) => onUpdate({ textureAmplitude: v })} />
+        {(layer.macroShape === 'circle' || layer.macroShape === 'parabola' || layer.macroShape === 'smooth') && (
+          <>
+            <ParamSlider label="Amplitude" min={ANIMATABLE_RANGES.amplitude.min} max={ANIMATABLE_RANGES.amplitude.max} step={5} value={layer.amplitude} onChange={(v) => onUpdate({ amplitude: v })} />
+            <ParamSlider label="Radius" min={100} max={3000} step={10} value={layer.macroRadius} onChange={(v) => onUpdate({ macroRadius: v })} />
+            <ParamSlider label="Textur-Stärke" min={0} max={200} step={5} value={layer.textureAmplitude} onChange={(v) => onUpdate({ textureAmplitude: v })} />
+          </>
+        )}
+        {layer.macroShape === 'fieldLines' && (
+          <>
+            <ParamSlider label="Magnet-Abstand" min={20} max={1000} step={10} value={layer.fieldPoleDistance} onChange={(v) => onUpdate({ fieldPoleDistance: v })} />
+            <ParamSlider label="Feldstärke" min={0} max={1} step={0.01} value={layer.fieldStrength} onChange={(v) => onUpdate({ fieldStrength: v })} />
+          </>
+        )}
+        {layer.macroShape === 'radial' && (
+          <>
+            <ParamSlider label="Radius" min={20} max={2000} step={10} value={layer.macroRadius} onChange={(v) => onUpdate({ macroRadius: v })} />
+            <ParamSlider label="Oval-Form" min={0.2} max={3} step={0.05} value={layer.radialOvality} onChange={(v) => onUpdate({ radialOvality: v })} />
+            <ParamSlider label="Verzerrung" min={-2} max={2} step={0.05} value={layer.radialTwist} onChange={(v) => onUpdate({ radialTwist: v })} />
+          </>
+        )}
         <ParamSlider label="Position X" min={-500} max={500} step={10} value={layer.offsetX} onChange={(v) => onUpdate({ offsetX: v })} />
         <ParamSlider label="Position Y" min={-500} max={500} step={10} value={layer.offsetY} onChange={(v) => onUpdate({ offsetY: v })} />
         <ParamSlider label="Deckkraft" min={0} max={1} step={0.01} value={layer.alpha} onChange={(v) => onUpdate({ alpha: v })} />
