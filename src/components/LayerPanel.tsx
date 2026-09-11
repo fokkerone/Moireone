@@ -1,12 +1,22 @@
 import { GripVertical, Copy, Trash2, Eye, EyeOff, Pause, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ParamSlider } from './ParamSlider';
 import { WidthCurveEditor } from './WidthCurveEditor';
 import { WidthImageControls } from './WidthImageControls';
 import { ColorStopsEditor } from './ColorStopsEditor';
 import type { LayerParams } from '../types';
 import { ANIMATABLE_RANGES } from '../animation';
+
+const MACRO_SHAPE_LABELS: Record<LayerParams['macroShape'], string> = {
+  circle: 'Kreis',
+  parabola: 'Parabel',
+  smooth: 'Sanfte Kurve',
+  fieldLines: 'Feldlinien',
+  radial: 'Strahlen',
+  rings: 'Ringe',
+};
 
 interface LayerPanelProps {
   layer: LayerParams;
@@ -103,49 +113,25 @@ export function LayerPanel({
         )}
         <ParamSlider label="Winkel" min={ANIMATABLE_RANGES.baseAngle.min} max={ANIMATABLE_RANGES.baseAngle.max} step={1} value={layer.baseAngle} onChange={(v) => onUpdate({ baseAngle: v })} />
 
-        <div className="mb-2 flex flex-wrap gap-1">
-          <Button
-            size="sm"
-            variant={layer.macroShape === 'circle' ? 'default' : 'outline'}
-            onClick={() => onUpdate({ macroShape: 'circle' })}
+        <div className="mb-2">
+          <Select
+            value={layer.macroShape}
+            onValueChange={(value) => onUpdate({ macroShape: value as LayerParams['macroShape'] })}
           >
-            Kreis
-          </Button>
-          <Button
-            size="sm"
-            variant={layer.macroShape === 'parabola' ? 'default' : 'outline'}
-            onClick={() => onUpdate({ macroShape: 'parabola' })}
-          >
-            Parabel
-          </Button>
-          <Button
-            size="sm"
-            variant={layer.macroShape === 'smooth' ? 'default' : 'outline'}
-            onClick={() => onUpdate({ macroShape: 'smooth' })}
-          >
-            Sanfte Kurve
-          </Button>
-          <Button
-            size="sm"
-            variant={layer.macroShape === 'fieldLines' ? 'default' : 'outline'}
-            onClick={() => onUpdate({ macroShape: 'fieldLines' })}
-          >
-            Feldlinien
-          </Button>
-          <Button
-            size="sm"
-            variant={layer.macroShape === 'radial' ? 'default' : 'outline'}
-            onClick={() => onUpdate({ macroShape: 'radial' })}
-          >
-            Strahlen
-          </Button>
-          <Button
-            size="sm"
-            variant={layer.macroShape === 'rings' ? 'default' : 'outline'}
-            onClick={() => onUpdate({ macroShape: 'rings' })}
-          >
-            Ringe
-          </Button>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Kurven-Typ">
+                {(value: LayerParams['macroShape'] | null) => (value ? MACRO_SHAPE_LABELS[value] : 'Kurven-Typ')}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="circle">Kreis</SelectItem>
+              <SelectItem value="parabola">Parabel</SelectItem>
+              <SelectItem value="smooth">Sanfte Kurve</SelectItem>
+              <SelectItem value="fieldLines">Feldlinien</SelectItem>
+              <SelectItem value="radial">Strahlen</SelectItem>
+              <SelectItem value="rings">Ringe</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         {(layer.macroShape === 'circle' || layer.macroShape === 'parabola' || layer.macroShape === 'smooth') && (
           <>
