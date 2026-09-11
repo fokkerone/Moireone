@@ -31,6 +31,11 @@ const straightLayer: LayerParams = {
   widthImageInvert: false,
   widthImageStrength: 1,
   widthImageData: null,
+  fieldPoleDistance: 200,
+  fieldLineCount: 24,
+  fieldStrength: 0.6,
+  radialOvality: 1,
+  radialTwist: 0.5,
 };
 
 const neutralNoise: NoiseFn = () => 0.5;
@@ -102,6 +107,11 @@ describe('generateLayerLines', () => {
       widthImageInvert: false,
       widthImageStrength: 1,
       widthImageData: null,
+      fieldPoleDistance: 200,
+      fieldLineCount: 24,
+      fieldStrength: 0.6,
+      radialOvality: 1,
+      radialTwist: 0.5,
     };
 
     // Deterministic, non-constant noise: the displacement genuinely varies
@@ -194,6 +204,11 @@ describe('generateLayerLines', () => {
       widthImageInvert: false,
       widthImageStrength: 1,
       widthImageData: null,
+      fieldPoleDistance: 200,
+      fieldLineCount: 24,
+      fieldStrength: 0.6,
+      radialOvality: 1,
+      radialTwist: 0.5,
     };
     const offsetLayer: LayerParams = { ...baseLayer, offsetX: 50, offsetY: 30 };
 
@@ -275,6 +290,11 @@ describe('generateLayerLines', () => {
       widthImageInvert: false,
       widthImageStrength: 1,
       widthImageData: null,
+      fieldPoleDistance: 200,
+      fieldLineCount: 24,
+      fieldStrength: 0.6,
+      radialOvality: 1,
+      radialTwist: 0.5,
     };
 
     // Deterministic noise keyed on the SCALED x coordinate the generator
@@ -297,7 +317,9 @@ describe('generateLayerLines', () => {
     // undisplaced travel line itself, whose y sits at exactly height/2 = 100
     // whenever displacement is 0):
     const diagonal = Math.sqrt(width * width + height * height);
-    const startX = width / 2 - diagonal;
+    // The generator spans `reach = 2 * diagonal` each side of the layer
+    // center along the travel axis (baseAngle 0, offset 0 -> centerX = width/2).
+    const startX = width / 2 - 2 * diagonal;
     const STEP_LENGTH = 4;
 
     // Only the center line (perpendicular offset 0) sits at y === 100
@@ -371,6 +393,11 @@ describe('generateLayerLines', () => {
       widthImageInvert: false,
       widthImageStrength: 1,
       widthImageData: null,
+      fieldPoleDistance: 200,
+      fieldLineCount: 24,
+      fieldStrength: 0.6,
+      radialOvality: 1,
+      radialTwist: 0.5,
     };
 
     const neutralNoise: NoiseFn = () => 0.5;
@@ -455,6 +482,11 @@ describe('generateLayerLines', () => {
       widthImageInvert: false,
       widthImageStrength: 1,
       widthImageData: null,
+      fieldPoleDistance: 200,
+      fieldLineCount: 24,
+      fieldStrength: 0.6,
+      radialOvality: 1,
+      radialTwist: 0.5,
     };
 
     const texturedLayer: LayerParams = { ...baseLayer, textureAmplitude: 50 };
@@ -495,5 +527,206 @@ describe('generateLayerLines', () => {
 
     expect(sawDifference).toBe(true);
     expect(sawNonConstantDiff).toBe(true);
+  });
+});
+
+describe('generateLayerLines - fieldLines macro shape', () => {
+  const fieldLayer: LayerParams = {
+    ...straightLayer,
+    macroShape: 'fieldLines',
+    fieldPoleDistance: 200,
+    fieldLineCount: 24,
+    fieldStrength: 0.6,
+  };
+
+  it('produces at least one line, entirely finite and within canvas bounds', () => {
+    const lines = generateLayerLines(fieldLayer, 400, 400, neutralNoise);
+    expect(lines.length).toBeGreaterThan(0);
+    for (const line of lines) {
+      expect(line.length).toBeGreaterThan(1);
+      for (const p of line) {
+        expect(Number.isFinite(p.x)).toBe(true);
+        expect(Number.isFinite(p.y)).toBe(true);
+        expect(p.x).toBeGreaterThanOrEqual(-0.001);
+        expect(p.x).toBeLessThanOrEqual(400.001);
+        expect(p.y).toBeGreaterThanOrEqual(-0.001);
+        expect(p.y).toBeLessThanOrEqual(400.001);
+      }
+    }
+  });
+
+  it('produces more lines when fieldLineCount is higher', () => {
+    const few = generateLayerLines({ ...fieldLayer, fieldLineCount: 4 }, 400, 400, neutralNoise);
+    const many = generateLayerLines({ ...fieldLayer, fieldLineCount: 40 }, 400, 400, neutralNoise);
+    expect(many.length).toBeGreaterThan(few.length);
+  });
+
+  it('fieldStrength = 0 traces straight rays away from the + pole', () => {
+    const straightField = { ...fieldLayer, fieldStrength: 0, spacing: 60 };
+    const lines = generateLayerLines(straightField, 600, 600, neutralNoise);
+    expect(lines.length).toBeGreaterThan(0);
+
+    // A pure radial ray from a fixed origin keeps every point collinear
+    // with the first two points of that same line.
+    for (const line of lines) {
+      if (line.length < 3) continue;
+      const [p0, p1] = line;
+      const dx = p1.x - p0.x;
+      const dy = p1.y - p0.y;
+      for (const p of line) {
+        const cross = (p.x - p0.x) * dy - (p.y - p0.y) * dx;
+        expect(Math.abs(cross)).toBeLessThan(1e-3 * Math.max(1, Math.hypot(dx, dy)));
+      }
+    }
+  });
+
+  it('fieldStrength = 1 curves lines away from the straight-ray path', () => {
+    const straightLines = generateLayerLines({ ...fieldLayer, fieldStrength: 0, spacing: 60 }, 600, 600, neutralNoise);
+    const curvedLines = generateLayerLines({ ...fieldLayer, fieldStrength: 1, spacing: 60 }, 600, 600, neutralNoise);
+    expect(straightLines.length).toBeGreaterThan(0);
+    expect(curvedLines.length).toBeGreaterThan(0);
+
+    const longestCurved = curvedLines.reduce((a, b) => (b.length > a.length ? b : a));
+    expect(longestCurved.length).toBeGreaterThan(2);
+    const [p0, p1] = longestCurved;
+    const dx = p1.x - p0.x;
+    const dy = p1.y - p0.y;
+    const last = longestCurved[longestCurved.length - 1];
+    const cross = (last.x - p0.x) * dy - (last.y - p0.y) * dx;
+    // A curved field line should NOT stay collinear with its own start
+    // direction all the way to its end point.
+    expect(Math.abs(cross)).toBeGreaterThan(1e-3 * Math.max(1, Math.hypot(dx, dy)));
+  });
+});
+
+describe('generateLayerLines - radial macro shape', () => {
+  const radialLayer: LayerParams = {
+    ...straightLayer,
+    macroShape: 'radial',
+    macroRadius: 150,
+    radialOvality: 1,
+    radialTwist: 0.5,
+  };
+
+  it('produces at least one line, entirely finite and within canvas bounds', () => {
+    const lines = generateLayerLines(radialLayer, 400, 400, neutralNoise);
+    expect(lines.length).toBeGreaterThan(0);
+    for (const line of lines) {
+      expect(line.length).toBeGreaterThan(1);
+      for (const p of line) {
+        expect(Number.isFinite(p.x)).toBe(true);
+        expect(Number.isFinite(p.y)).toBe(true);
+        expect(p.x).toBeGreaterThanOrEqual(-0.001);
+        expect(p.x).toBeLessThanOrEqual(400.001);
+        expect(p.y).toBeGreaterThanOrEqual(-0.001);
+        expect(p.y).toBeLessThanOrEqual(400.001);
+      }
+    }
+  });
+
+  it('shifts the whole pattern when offsetX/offsetY (the center) changes', () => {
+    const base = generateLayerLines(radialLayer, 400, 400, neutralNoise);
+    const moved = generateLayerLines({ ...radialLayer, offsetX: 50, offsetY: -30 }, 400, 400, neutralNoise);
+    expect(base.length).toBeGreaterThan(0);
+    expect(moved.length).toBeGreaterThan(0);
+    // Not a strict per-point comparison (canvas clipping reshapes segments
+    // near the edges), just proof the center actually moved the output.
+    const baseFirst = base[0][0];
+    const movedFirst = moved[0][0];
+    const sameStart = Math.abs(baseFirst.x - movedFirst.x) < 1e-6 && Math.abs(baseFirst.y - movedFirst.y) < 1e-6;
+    expect(sameStart).toBe(false);
+  });
+
+  it('radialTwist = 0 produces straight rays from the center', () => {
+    const straightRadial = { ...radialLayer, radialTwist: 0, radialOvality: 1, spacing: 80 };
+    const lines = generateLayerLines(straightRadial, 800, 800, neutralNoise);
+    expect(lines.length).toBeGreaterThan(0);
+
+    for (const line of lines) {
+      if (line.length < 3) continue;
+      const [p0, p1] = line;
+      const dx = p1.x - p0.x;
+      const dy = p1.y - p0.y;
+      for (const p of line) {
+        const cross = (p.x - p0.x) * dy - (p.y - p0.y) * dx;
+        expect(Math.abs(cross)).toBeLessThan(1e-3 * Math.max(1, Math.hypot(dx, dy)));
+      }
+    }
+  });
+
+  it('radialTwist != 0 curves the rays (no longer collinear end-to-end)', () => {
+    const twisted = { ...radialLayer, radialTwist: 1.2, radialOvality: 1, spacing: 80 };
+    const lines = generateLayerLines(twisted, 800, 800, neutralNoise);
+    const longest = lines.reduce((a, b) => (b.length > a.length ? b : a));
+    expect(longest.length).toBeGreaterThan(2);
+    const [p0, p1] = longest;
+    const dx = p1.x - p0.x;
+    const dy = p1.y - p0.y;
+    const last = longest[longest.length - 1];
+    const cross = (last.x - p0.x) * dy - (last.y - p0.y) * dx;
+    expect(Math.abs(cross)).toBeGreaterThan(1e-3 * Math.max(1, Math.hypot(dx, dy)));
+  });
+});
+
+describe('generateLayerLines - rings macro shape', () => {
+  const ringsLayer: LayerParams = {
+    ...straightLayer,
+    macroShape: 'rings',
+    spacing: 40,
+    radialOvality: 1,
+  };
+
+  it('produces at least one line, entirely finite and within canvas bounds', () => {
+    const lines = generateLayerLines(ringsLayer, 400, 400, neutralNoise);
+    expect(lines.length).toBeGreaterThan(0);
+    for (const line of lines) {
+      expect(line.length).toBeGreaterThan(1);
+      for (const p of line) {
+        expect(Number.isFinite(p.x)).toBe(true);
+        expect(Number.isFinite(p.y)).toBe(true);
+        expect(p.x).toBeGreaterThanOrEqual(-0.001);
+        expect(p.x).toBeLessThanOrEqual(400.001);
+        expect(p.y).toBeGreaterThanOrEqual(-0.001);
+        expect(p.y).toBeLessThanOrEqual(400.001);
+      }
+    }
+  });
+
+  it('every point of every ring sits at a consistent distance from the center (a real circle, not a taper)', () => {
+    // Large canvas + only the center portion, so full untruncated rings
+    // are present and easy to reason about.
+    const lines = generateLayerLines({ ...ringsLayer, spacing: 100 }, 1000, 1000, neutralNoise);
+    const centerX = 500;
+    const centerY = 500;
+
+    // Pick a ring that's fully inside the canvas (a single closed segment
+    // whose points don't touch the canvas edge).
+    const fullRing = lines.find((line) =>
+      line.length > 20 && line.every((p) => p.x > 10 && p.x < 990 && p.y > 10 && p.y < 990)
+    );
+    expect(fullRing).toBeDefined();
+
+    const radii = fullRing!.map((p) => Math.hypot(p.x - centerX, p.y - centerY));
+    const minR = Math.min(...radii);
+    const maxR = Math.max(...radii);
+    // All points on one ring should be at (nearly) the same radius.
+    expect(maxR - minR).toBeLessThan(1);
+  });
+
+  it('produces more rings when spacing is smaller (denser radius steps)', () => {
+    const wide = generateLayerLines({ ...ringsLayer, spacing: 200 }, 1000, 1000, neutralNoise);
+    const tight = generateLayerLines({ ...ringsLayer, spacing: 20 }, 1000, 1000, neutralNoise);
+    expect(tight.length).toBeGreaterThan(wide.length);
+  });
+
+  it('shifts the whole pattern when offsetX/offsetY (the center) changes', () => {
+    const base = generateLayerLines(ringsLayer, 400, 400, neutralNoise);
+    const moved = generateLayerLines({ ...ringsLayer, offsetX: 60, offsetY: -40 }, 400, 400, neutralNoise);
+    expect(base.length).toBeGreaterThan(0);
+    expect(moved.length).toBeGreaterThan(0);
+    const baseFirst = base[0][0];
+    const movedFirst = moved[0][0];
+    const sameStart = Math.abs(baseFirst.x - movedFirst.x) < 1e-6 && Math.abs(baseFirst.y - movedFirst.y) < 1e-6;
+    expect(sameStart).toBe(false);
   });
 });

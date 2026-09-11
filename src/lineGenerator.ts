@@ -17,13 +17,54 @@ function isInsideCanvas(point: Point, width: number, height: number): boolean {
   return point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height;
 }
 
+// Walks a raw (unclipped) path and splits it into the in-canvas runs, using
+// the same exit/re-entry segmenting rule as the parallel-line generator
+// below: a run of 2+ in-canvas points becomes one line; anything shorter is
+// dropped rather than kept as a degenerate 0-1 point "line".
+function clipPathToCanvas(rawPoints: Point[], width: number, height: number): Point[][] {
+  const lines: Point[][] = [];
+  let segment: Point[] = [];
+  for (const point of rawPoints) {
+    if (isInsideCanvas(point, width, height)) {
+      segment.push(point);
+    } else if (segment.length > 1) {
+      lines.push(segment);
+      segment = [];
+    } else {
+      segment = [];
+    }
+  }
+  if (segment.length > 1) {
+    lines.push(segment);
+  }
+  return lines;
+}
+
 export function generateLayerLines(
   layer: LayerParams,
   width: number,
   height: number,
   noise: NoiseFn
 ): Point[][] {
+  if (layer.macroShape === 'fieldLines') {
+    return generateFieldLines(layer, width, height);
+  }
+  if (layer.macroShape === 'radial') {
+    return generateRadialLines(layer, width, height);
+  }
+  if (layer.macroShape === 'rings') {
+    return generateRings(layer, width, height);
+  }
+
+  const macroShape = layer.macroShape;
   const diagonal = Math.sqrt(width * width + height * height);
+
+  // Generate the line field over twice the canvas area (in both x and y) so
+  // a layer can be dragged far via offsetX/offsetY without exposing empty
+  // edges. `reach` is the diagonal of that 2x-canvas box (= 2 * diagonal),
+  // used as the half-length along the travel axis and the half-width across
+  // it; everything outside the real canvas is clipped by isInsideCanvas.
+  const reach = 2 * diagonal;
 
   const travelAngle = toRadians(layer.baseAngle);
   const travelX = Math.cos(travelAngle);
@@ -39,10 +80,10 @@ export function generateLayerLines(
   // Start well behind the canvas along the travel axis, symmetric to the
   // old spine-start construction, so every line spans the full canvas
   // regardless of baseAngle.
-  const startX = centerX - travelX * diagonal;
-  const startY = centerY - travelY * diagonal;
+  const startX = centerX - travelX * reach;
+  const startY = centerY - travelY * reach;
 
-  const numSteps = Math.ceil((2 * diagonal) / STEP_LENGTH);
+  const numSteps = Math.ceil((2 * reach) / STEP_LENGTH);
 
   // Precompute the base (undisplaced) travel-line point and the shared
   // perpendicular displacement ONCE per step -- every parallel line reads
@@ -55,15 +96,15 @@ export function generateLayerLines(
     const by = startY + travelY * STEP_LENGTH * s;
     baseXs[s] = bx;
     baseYs[s] = by;
-    const distanceFromCenter = Math.abs(s * STEP_LENGTH - diagonal);
-    const macroOffset = macroShapeOffset(layer.macroShape, distanceFromCenter, layer.macroRadius, layer.amplitude);
+    const distanceFromCenter = Math.abs(s * STEP_LENGTH - reach);
+    const macroOffset = macroShapeOffset(macroShape, distanceFromCenter, layer.macroRadius, layer.amplitude);
     const textureOffset = layer.textureAmplitude > 0
       ? layer.textureAmplitude * (noise(bx * TEXTURE_NOISE_SCALE, by * TEXTURE_NOISE_SCALE, layer.seed) - 0.5) * 2
       : 0;
     displacements[s] = macroOffset + textureOffset;
   }
 
-  const halfCount = Math.ceil(diagonal / layer.spacing / 2);
+  const halfCount = Math.ceil(reach / layer.spacing);
   const lines: Point[][] = [];
 
   for (let i = -halfCount; i <= halfCount; i++) {
@@ -90,6 +131,190 @@ export function generateLayerLines(
     if (currentSegment.length > 1) {
       lines.push(currentSegment);
     }
+  }
+
+  return lines;
+}
+
+// --- Field Lines -----------------------------------------------------------
+//
+// Traces the field lines of a two-pole (dipole) point-charge field: a "+"
+// pole and a "-" pole, `fieldPoleDistance` apart, centered at the layer's
+// position (offsetX/offsetY) and oriented along baseAngle. Lines start on a
+// small circle around the "+" pole and are integrated outward, step by
+// step, following the local field direction until they either reach the
+// "-" pole or run away past the generous tracing bounds.
+//
+// `fieldStrength` (0..1) blends each step's direction between a pure
+// radial ray away from the "+" pole (strength 0 -- straight lines, same as
+// ignoring the "-" pole) and the true dipole field direction (strength 1 --
+// full curvature toward the "-" pole), the same lerp-by-strength idiom used
+// by the width-image feature.
+function generateFieldLines(layer: LayerParams, width: number, height: number): Point[][] {
+  const rot = toRadians(layer.baseAngle);
+  const axisX = Math.cos(rot);
+  const axisY = Math.sin(rot);
+  const centerX = width / 2 + layer.offsetX;
+  const centerY = height / 2 + layer.offsetY;
+
+  const poleDistance = Math.max(1, layer.fieldPoleDistance);
+  const half = poleDistance / 2;
+  const poleAx = centerX - axisX * half; // "+" pole -- lines originate here
+  const poleAy = centerY - axisY * half;
+  const poleBx = centerX + axisX * half; // "-" pole -- lines curve toward here
+  const poleBy = centerY + axisY * half;
+
+  const strength = Math.min(1, Math.max(0, layer.fieldStrength));
+  const startRadius = Math.max(4, poleDistance * 0.08);
+  const captureRadius = Math.max(2, poleDistance * 0.03);
+  const lineCount = Math.max(1, Math.round(layer.fieldLineCount));
+
+  const diagonal = Math.sqrt(width * width + height * height);
+  const maxSteps = Math.ceil((4 * diagonal) / STEP_LENGTH);
+  const runawayLimit = 6 * Math.max(width, height);
+  const minRadius = 1e-3;
+
+  const lines: Point[][] = [];
+
+  for (let i = 0; i < lineCount; i++) {
+    const startAngle = (i / lineCount) * Math.PI * 2;
+    let px = poleAx + Math.cos(startAngle) * startRadius;
+    let py = poleAy + Math.sin(startAngle) * startRadius;
+    const rawPoints: Point[] = [{ x: px, y: py }];
+
+    for (let s = 0; s < maxSteps; s++) {
+      const dAx = px - poleAx;
+      const dAy = py - poleAy;
+      const rA = Math.max(minRadius, Math.hypot(dAx, dAy));
+      const dBx = px - poleBx;
+      const dBy = py - poleBy;
+      const rB = Math.max(minRadius, Math.hypot(dBx, dBy));
+
+      // Dipole field direction: inverse-square contribution away from the
+      // "+" pole minus the same from the "-" pole (only the direction of
+      // the resultant vector is used, so its overall magnitude cancels out
+      // in the normalize below).
+      const fx = dAx / (rA * rA * rA) - dBx / (rB * rB * rB);
+      const fy = dAy / (rA * rA * rA) - dBy / (rB * rB * rB);
+      const fieldLen = Math.max(minRadius, Math.hypot(fx, fy));
+      const trueDirX = fx / fieldLen;
+      const trueDirY = fy / fieldLen;
+
+      const radialDirX = dAx / rA;
+      const radialDirY = dAy / rA;
+
+      let dirX = radialDirX + (trueDirX - radialDirX) * strength;
+      let dirY = radialDirY + (trueDirY - radialDirY) * strength;
+      const dirLen = Math.max(minRadius, Math.hypot(dirX, dirY));
+      dirX /= dirLen;
+      dirY /= dirLen;
+
+      px += dirX * STEP_LENGTH;
+      py += dirY * STEP_LENGTH;
+      rawPoints.push({ x: px, y: py });
+
+      if (rB < captureRadius) {
+        break;
+      }
+      if (Math.abs(px - centerX) > runawayLimit || Math.abs(py - centerY) > runawayLimit) {
+        break;
+      }
+    }
+
+    lines.push(...clipPathToCanvas(rawPoints, width, height));
+  }
+
+  return lines;
+}
+
+// --- Radial (spiral) --------------------------------------------------------
+//
+// Rays grow outward from the layer's center (offsetX/offsetY) with
+// increasing radius, squashed into an oval (`radialOvality`, 1 = circular)
+// and twisted so the angle drifts with radius (`radialTwist`) -- a linear
+// transform of a straight ray would still be a straight line, so the twist
+// is what makes each one an actual curve rather than a spoke.
+function generateRadialLines(layer: LayerParams, width: number, height: number): Point[][] {
+  const rot = toRadians(layer.baseAngle);
+  const cosR = Math.cos(rot);
+  const sinR = Math.sin(rot);
+  const centerX = width / 2 + layer.offsetX;
+  const centerY = height / 2 + layer.offsetY;
+
+  const diagonal = Math.sqrt(width * width + height * height);
+  const reach = 2 * diagonal;
+  const numSteps = Math.ceil(reach / STEP_LENGTH);
+
+  const refRadius = Math.max(10, layer.macroRadius);
+  const numSpokes = Math.max(8, Math.round((2 * Math.PI * refRadius) / Math.max(1, layer.spacing)));
+  const ovality = Math.max(0.1, layer.radialOvality);
+  const twist = layer.radialTwist;
+
+  const lines: Point[][] = [];
+
+  for (let i = 0; i < numSpokes; i++) {
+    const baseAngle = (i / numSpokes) * Math.PI * 2;
+    const rawPoints: Point[] = [];
+
+    for (let s = 1; s <= numSteps; s++) {
+      const r = s * STEP_LENGTH;
+      const angle = baseAngle + twist * (r / refRadius);
+      const lx = Math.cos(angle) * r;
+      const ly = Math.sin(angle) * r * ovality;
+      rawPoints.push({
+        x: centerX + lx * cosR - ly * sinR,
+        y: centerY + lx * sinR + ly * cosR,
+      });
+    }
+
+    lines.push(...clipPathToCanvas(rawPoints, width, height));
+  }
+
+  return lines;
+}
+
+// --- Rings -------------------------------------------------------------
+//
+// Actual concentric circle/oval outlines of growing radius around the
+// layer's center (offsetX/offsetY) -- unlike 'radial', which sends lines
+// OUT from the center, each ring here is its own closed loop at a fixed
+// radius, and radius grows from ring to ring. Reuses `spacing` (the
+// global "Abstand" slider) as the radius step between rings and
+// `radialOvality` for the oval squash, so no new per-shape params are
+// needed beyond what 'radial' already introduced.
+function generateRings(layer: LayerParams, width: number, height: number): Point[][] {
+  const rot = toRadians(layer.baseAngle);
+  const cosR = Math.cos(rot);
+  const sinR = Math.sin(rot);
+  const centerX = width / 2 + layer.offsetX;
+  const centerY = height / 2 + layer.offsetY;
+
+  const diagonal = Math.sqrt(width * width + height * height);
+  const reach = 2 * diagonal;
+  const ringStep = Math.max(1, layer.spacing);
+  const ringCount = Math.max(1, Math.ceil(reach / ringStep));
+  const ovality = Math.max(0.1, layer.radialOvality);
+
+  const lines: Point[][] = [];
+
+  for (let k = 1; k <= ringCount; k++) {
+    const r = k * ringStep;
+    // More steps for bigger rings so the point spacing along the
+    // circumference stays close to STEP_LENGTH regardless of radius.
+    const numSteps = Math.max(24, Math.ceil((2 * Math.PI * r) / STEP_LENGTH));
+    const rawPoints: Point[] = [];
+
+    for (let s = 0; s <= numSteps; s++) {
+      const angle = (s / numSteps) * Math.PI * 2;
+      const lx = Math.cos(angle) * r;
+      const ly = Math.sin(angle) * r * ovality;
+      rawPoints.push({
+        x: centerX + lx * cosR - ly * sinR,
+        y: centerY + lx * sinR + ly * cosR,
+      });
+    }
+
+    lines.push(...clipPathToCanvas(rawPoints, width, height));
   }
 
   return lines;

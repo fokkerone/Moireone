@@ -1,12 +1,22 @@
 import { GripVertical, Copy, Trash2, Eye, EyeOff, Pause, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ParamSlider } from './ParamSlider';
 import { WidthCurveEditor } from './WidthCurveEditor';
 import { WidthImageControls } from './WidthImageControls';
 import { ColorStopsEditor } from './ColorStopsEditor';
 import type { LayerParams } from '../types';
 import { ANIMATABLE_RANGES } from '../animation';
+
+const MACRO_SHAPE_LABELS: Record<LayerParams['macroShape'], string> = {
+  circle: 'Kreis',
+  parabola: 'Parabel',
+  smooth: 'Sanfte Kurve',
+  fieldLines: 'Feldlinien',
+  radial: 'Strahlen',
+  rings: 'Ringe',
+};
 
 interface LayerPanelProps {
   layer: LayerParams;
@@ -103,34 +113,52 @@ export function LayerPanel({
         )}
         <ParamSlider label="Winkel" min={ANIMATABLE_RANGES.baseAngle.min} max={ANIMATABLE_RANGES.baseAngle.max} step={1} value={layer.baseAngle} onChange={(v) => onUpdate({ baseAngle: v })} />
 
-        <div className="mb-2 flex gap-1">
-          <Button
-            size="sm"
-            variant={layer.macroShape === 'circle' ? 'default' : 'outline'}
-            onClick={() => onUpdate({ macroShape: 'circle' })}
+        <div className="mb-2">
+          <Select
+            value={layer.macroShape}
+            onValueChange={(value) => onUpdate({ macroShape: value as LayerParams['macroShape'] })}
           >
-            Kreis
-          </Button>
-          <Button
-            size="sm"
-            variant={layer.macroShape === 'parabola' ? 'default' : 'outline'}
-            onClick={() => onUpdate({ macroShape: 'parabola' })}
-          >
-            Parabel
-          </Button>
-          <Button
-            size="sm"
-            variant={layer.macroShape === 'smooth' ? 'default' : 'outline'}
-            onClick={() => onUpdate({ macroShape: 'smooth' })}
-          >
-            Sanfte Kurve
-          </Button>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Kurven-Typ">
+                {(value: LayerParams['macroShape'] | null) => (value ? MACRO_SHAPE_LABELS[value] : 'Kurven-Typ')}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="circle">Kreis</SelectItem>
+              <SelectItem value="parabola">Parabel</SelectItem>
+              <SelectItem value="smooth">Sanfte Kurve</SelectItem>
+              <SelectItem value="fieldLines">Feldlinien</SelectItem>
+              <SelectItem value="radial">Strahlen</SelectItem>
+              <SelectItem value="rings">Ringe</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <ParamSlider label="Amplitude" min={ANIMATABLE_RANGES.amplitude.min} max={ANIMATABLE_RANGES.amplitude.max} step={5} value={layer.amplitude} onChange={(v) => onUpdate({ amplitude: v })} />
-        <ParamSlider label="Radius" min={100} max={3000} step={10} value={layer.macroRadius} onChange={(v) => onUpdate({ macroRadius: v })} />
-        <ParamSlider label="Textur-Stärke" min={0} max={200} step={5} value={layer.textureAmplitude} onChange={(v) => onUpdate({ textureAmplitude: v })} />
-        <ParamSlider label="Position X" min={-500} max={500} step={10} value={layer.offsetX} onChange={(v) => onUpdate({ offsetX: v })} />
-        <ParamSlider label="Position Y" min={-500} max={500} step={10} value={layer.offsetY} onChange={(v) => onUpdate({ offsetY: v })} />
+        {(layer.macroShape === 'circle' || layer.macroShape === 'parabola' || layer.macroShape === 'smooth') && (
+          <>
+            <ParamSlider label="Amplitude" min={ANIMATABLE_RANGES.amplitude.min} max={ANIMATABLE_RANGES.amplitude.max} step={5} value={layer.amplitude} onChange={(v) => onUpdate({ amplitude: v })} />
+            <ParamSlider label="Radius" min={100} max={3000} step={10} value={layer.macroRadius} onChange={(v) => onUpdate({ macroRadius: v })} />
+            <ParamSlider label="Textur-Stärke" min={0} max={200} step={5} value={layer.textureAmplitude} onChange={(v) => onUpdate({ textureAmplitude: v })} />
+          </>
+        )}
+        {layer.macroShape === 'fieldLines' && (
+          <>
+            <ParamSlider label="Magnet-Abstand" min={20} max={1000} step={10} value={layer.fieldPoleDistance} onChange={(v) => onUpdate({ fieldPoleDistance: v })} />
+            <ParamSlider label="Feldstärke" min={0} max={1} step={0.01} value={layer.fieldStrength} onChange={(v) => onUpdate({ fieldStrength: v })} />
+            <ParamSlider label="Anzahl Linien" min={4} max={200} step={1} value={layer.fieldLineCount} onChange={(v) => onUpdate({ fieldLineCount: v })} />
+          </>
+        )}
+        {layer.macroShape === 'radial' && (
+          <>
+            <ParamSlider label="Radius" min={20} max={2000} step={10} value={layer.macroRadius} onChange={(v) => onUpdate({ macroRadius: v })} />
+            <ParamSlider label="Oval-Form" min={0.2} max={3} step={0.05} value={layer.radialOvality} onChange={(v) => onUpdate({ radialOvality: v })} />
+            <ParamSlider label="Verzerrung" min={-2} max={2} step={0.05} value={layer.radialTwist} onChange={(v) => onUpdate({ radialTwist: v })} />
+          </>
+        )}
+        {layer.macroShape === 'rings' && (
+          <ParamSlider label="Oval-Form" min={0.2} max={3} step={0.05} value={layer.radialOvality} onChange={(v) => onUpdate({ radialOvality: v })} />
+        )}
+        <ParamSlider label="Position X" min={-1000} max={1000} step={10} value={layer.offsetX} onChange={(v) => onUpdate({ offsetX: v })} />
+        <ParamSlider label="Position Y" min={-1000} max={1000} step={10} value={layer.offsetY} onChange={(v) => onUpdate({ offsetY: v })} />
         <ParamSlider label="Deckkraft" min={0} max={1} step={0.01} value={layer.alpha} onChange={(v) => onUpdate({ alpha: v })} />
 
         <div className="mb-2">
