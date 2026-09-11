@@ -12,6 +12,7 @@ const state: PatternState = {
   animationPlaying: false,
   animationSpeed: 1,
   orientation: 'landscape',
+  canvasSizeId: '80x120',
   layers: [
     {
       fillMode: 'gradient',
@@ -158,6 +159,7 @@ describe('buildSvgString', () => {
   animationPlaying: false,
   animationSpeed: 1,
   orientation: 'landscape',
+  canvasSizeId: '80x120',
       layers: [
         {
           fillMode: 'gradient',
@@ -219,6 +221,7 @@ describe('buildSvgString', () => {
   animationPlaying: false,
   animationSpeed: 1,
   orientation: 'landscape',
+  canvasSizeId: '80x120',
       layers: [
         {
           fillMode: 'gradient',
@@ -333,6 +336,7 @@ describe('buildSvgString', () => {
       animationPlaying: false,
       animationSpeed: 1,
       orientation: 'landscape',
+      canvasSizeId: '80x120',
       layers: [imageLayer],
     };
     const line: Point[] = [
@@ -363,6 +367,7 @@ describe('buildSvgString', () => {
   animationPlaying: false,
   animationSpeed: 1,
   orientation: 'landscape',
+  canvasSizeId: '80x120',
       layers: [
         {
           fillMode: 'gradient',
@@ -487,6 +492,7 @@ describe('buildSvgString', () => {
       animationPlaying: false,
       animationSpeed: 1,
   orientation: 'landscape',
+  canvasSizeId: '80x120',
       layers: [
         {
           fillMode: 'solid',
@@ -549,6 +555,7 @@ describe('buildSvgString', () => {
       animationPlaying: false,
       animationSpeed: 1,
   orientation: 'landscape',
+  canvasSizeId: '80x120',
       layers: [
         {
           fillMode: 'gradient',
@@ -618,6 +625,7 @@ describe('buildSvgString', () => {
       animationPlaying: false,
       animationSpeed: 1,
       orientation: 'landscape',
+      canvasSizeId: '80x120',
       layers: [
         {
           fillMode: 'gradient',

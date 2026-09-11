@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ParamSlider } from './ParamSlider';
 import { LayerAccordion } from './LayerAccordion';
 import { ColorStopsEditor } from './ColorStopsEditor';
+import { CANVAS_SIZE_PRESETS } from '../canvasSize';
 import type { ColorStop, GradientType, LayerParams, PatternState } from '../types';
 
 interface SidebarProps {
@@ -23,6 +25,7 @@ interface SidebarProps {
   onToggleAnimationPlaying: () => void;
   onAnimationSpeedChange: (speed: number) => void;
   onOrientationChange: () => void;
+  onCanvasSizeChange: (canvasSizeId: string) => void;
 }
 
 export function Sidebar({
@@ -42,6 +45,7 @@ export function Sidebar({
   onToggleAnimationPlaying,
   onAnimationSpeedChange,
   onOrientationChange,
+  onCanvasSizeChange,
 }: SidebarProps) {
   const spacing = state.layers[0]?.spacing ?? 14;
   const weight = state.layers[0]?.weight ?? 1.5;
@@ -49,7 +53,7 @@ export function Sidebar({
 
   if (collapsed) {
     return (
-      <div className="fixed right-0 top-0 z-10 flex h-screen w-10 items-start justify-center bg-neutral-900/85 pt-3">
+      <div className="z-10 flex h-screen w-10 shrink-0 items-start justify-center bg-neutral-900/85 pt-3">
         <Button size="icon" variant="ghost" onClick={() => setCollapsed(false)}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -58,13 +62,29 @@ export function Sidebar({
   }
 
   return (
-    <div className="fixed right-0 top-0 z-10 h-screen w-[27rem] overflow-y-auto bg-neutral-900/85 p-3 text-sm text-white">
+    <div className="z-10 h-screen w-[27rem] shrink-0 overflow-y-auto bg-neutral-900/85 p-3 text-sm text-white">
       <Button size="icon" variant="ghost" className="mb-2" onClick={() => setCollapsed(true)}>
         <ChevronRight className="h-4 w-4" />
       </Button>
       <Button variant="outline" className="mb-2 w-full" onClick={onOrientationChange}>
         {state.orientation === 'landscape' ? 'Querformat' : 'Hochformat'}
       </Button>
+      <div className="mb-2">
+        <Select value={state.canvasSizeId} onValueChange={(value) => value && onCanvasSizeChange(value)}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Format">
+              {(value: string | null) => CANVAS_SIZE_PRESETS.find((preset) => preset.id === value)?.label ?? 'Format'}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {CANVAS_SIZE_PRESETS.map((preset) => (
+              <SelectItem key={preset.id} value={preset.id}>
+                {preset.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <div className="mb-2">
         <Button
           size="sm"

@@ -18,7 +18,7 @@ import type { LayerParams, Point } from './types';
 export function App() {
   const [state, setState] = useState(createDefaultState());
   const [viewZoom, setViewZoom] = useState(1);
-  const { width: canvasWidth, height: canvasHeight } = getCanvasSize(state.orientation);
+  const { width: canvasWidth, height: canvasHeight } = getCanvasSize(state.canvasSizeId, state.orientation);
   const cachedLinesRef = useRef<Point[][][]>([]);
   const elapsedRef = useRef<number[]>([]);
   const lastFrameTimeRef = useRef<number | null>(null);
@@ -88,17 +88,19 @@ export function App() {
   }, [state.animationPlaying]);
 
   return (
-    <>
-      <Canvas
-        state={state}
-        zoom={viewZoom}
-        width={canvasWidth}
-        height={canvasHeight}
-        onCachedLinesChange={(lines) => {
-          cachedLinesRef.current = lines;
-        }}
-      />
-      <ZoomControls zoom={viewZoom} onZoomChange={setViewZoom} />
+    <div className="flex h-screen w-screen">
+      <div className="relative flex-1 overflow-hidden bg-neutral-950">
+        <Canvas
+          state={state}
+          zoom={viewZoom}
+          width={canvasWidth}
+          height={canvasHeight}
+          onCachedLinesChange={(lines) => {
+            cachedLinesRef.current = lines;
+          }}
+        />
+        <ZoomControls zoom={viewZoom} onZoomChange={setViewZoom} />
+      </div>
       <Sidebar
         state={state}
         onOrientationChange={() =>
@@ -107,6 +109,7 @@ export function App() {
             orientation: prev.orientation === 'landscape' ? 'portrait' : 'landscape',
           }))
         }
+        onCanvasSizeChange={(canvasSizeId) => setState((prev) => ({ ...prev, canvasSizeId }))}
         onToggleBackgroundFillMode={() =>
           setState((prev) => ({
             ...prev,
@@ -137,6 +140,6 @@ export function App() {
         }
         onAnimationSpeedChange={(speed) => setState((prev) => ({ ...prev, animationSpeed: speed }))}
       />
-    </>
+    </div>
   );
 }

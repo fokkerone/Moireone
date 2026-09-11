@@ -1,5 +1,6 @@
 import type { LayerParams, PatternState } from './types';
 import { getDefaultLayerColor, getDefaultLayerColorEnd } from './palette';
+import { DEFAULT_CANVAS_SIZE_ID } from './canvasSize';
 
 export const MIN_LAYERS = 2;
 export const MAX_LAYERS = 5;
@@ -63,6 +64,7 @@ export function createDefaultState(): PatternState {
     animationPlaying: false,
     animationSpeed: 1,
     orientation: 'landscape',
+    canvasSizeId: DEFAULT_CANVAS_SIZE_ID,
   };
 }
 
