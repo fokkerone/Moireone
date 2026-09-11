@@ -16,7 +16,7 @@ function clampZoom(zoom: number): number {
 
 export function ZoomControls({ zoom, onZoomChange }: ZoomControlsProps) {
   return (
-    <div className="fixed bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-lg bg-neutral-900/85 px-3 py-2 text-sm text-white shadow-lg">
+    <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-lg bg-neutral-900/85 px-3 py-2 text-sm text-white shadow-lg">
       <Button
         size="icon-sm"
         variant="ghost"

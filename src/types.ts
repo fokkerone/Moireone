@@ -62,4 +62,6 @@ export interface PatternState {
   animationPlaying: boolean;
   animationSpeed: number;
   orientation: Orientation;
+  /** Id of the selected preset from `CANVAS_SIZE_PRESETS` (canvasSize.ts). */
+  canvasSizeId: string;
 }

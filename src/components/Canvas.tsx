@@ -82,7 +82,7 @@ export function Canvas({ state, onCachedLinesChange, zoom, width, height }: Canv
   }, []);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-hidden bg-neutral-950">
+    <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
       <div
         ref={containerRef}
         style={{ width, height, transform: `scale(${zoom})`, transformOrigin: 'center center' }}
