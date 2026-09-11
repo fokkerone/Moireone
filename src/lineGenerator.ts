@@ -59,6 +59,13 @@ export function generateLayerLines(
   const macroShape = layer.macroShape;
   const diagonal = Math.sqrt(width * width + height * height);
 
+  // Generate the line field over twice the canvas area (in both x and y) so
+  // a layer can be dragged far via offsetX/offsetY without exposing empty
+  // edges. `reach` is the diagonal of that 2x-canvas box (= 2 * diagonal),
+  // used as the half-length along the travel axis and the half-width across
+  // it; everything outside the real canvas is clipped by isInsideCanvas.
+  const reach = 2 * diagonal;
+
   const travelAngle = toRadians(layer.baseAngle);
   const travelX = Math.cos(travelAngle);
   const travelY = Math.sin(travelAngle);
@@ -73,10 +80,10 @@ export function generateLayerLines(
   // Start well behind the canvas along the travel axis, symmetric to the
   // old spine-start construction, so every line spans the full canvas
   // regardless of baseAngle.
-  const startX = centerX - travelX * diagonal;
-  const startY = centerY - travelY * diagonal;
+  const startX = centerX - travelX * reach;
+  const startY = centerY - travelY * reach;
 
-  const numSteps = Math.ceil((2 * diagonal) / STEP_LENGTH);
+  const numSteps = Math.ceil((2 * reach) / STEP_LENGTH);
 
   // Precompute the base (undisplaced) travel-line point and the shared
   // perpendicular displacement ONCE per step -- every parallel line reads
@@ -89,7 +96,7 @@ export function generateLayerLines(
     const by = startY + travelY * STEP_LENGTH * s;
     baseXs[s] = bx;
     baseYs[s] = by;
-    const distanceFromCenter = Math.abs(s * STEP_LENGTH - diagonal);
+    const distanceFromCenter = Math.abs(s * STEP_LENGTH - reach);
     const macroOffset = macroShapeOffset(macroShape, distanceFromCenter, layer.macroRadius, layer.amplitude);
     const textureOffset = layer.textureAmplitude > 0
       ? layer.textureAmplitude * (noise(bx * TEXTURE_NOISE_SCALE, by * TEXTURE_NOISE_SCALE, layer.seed) - 0.5) * 2
@@ -97,7 +104,7 @@ export function generateLayerLines(
     displacements[s] = macroOffset + textureOffset;
   }
 
-  const halfCount = Math.ceil(diagonal / layer.spacing / 2);
+  const halfCount = Math.ceil(reach / layer.spacing);
   const lines: Point[][] = [];
 
   for (let i = -halfCount; i <= halfCount; i++) {

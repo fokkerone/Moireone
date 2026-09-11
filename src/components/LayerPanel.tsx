@@ -157,8 +157,8 @@ export function LayerPanel({
         {layer.macroShape === 'rings' && (
           <ParamSlider label="Oval-Form" min={0.2} max={3} step={0.05} value={layer.radialOvality} onChange={(v) => onUpdate({ radialOvality: v })} />
         )}
-        <ParamSlider label="Position X" min={-500} max={500} step={10} value={layer.offsetX} onChange={(v) => onUpdate({ offsetX: v })} />
-        <ParamSlider label="Position Y" min={-500} max={500} step={10} value={layer.offsetY} onChange={(v) => onUpdate({ offsetY: v })} />
+        <ParamSlider label="Position X" min={-1000} max={1000} step={10} value={layer.offsetX} onChange={(v) => onUpdate({ offsetX: v })} />
+        <ParamSlider label="Position Y" min={-1000} max={1000} step={10} value={layer.offsetY} onChange={(v) => onUpdate({ offsetY: v })} />
         <ParamSlider label="Deckkraft" min={0} max={1} step={0.01} value={layer.alpha} onChange={(v) => onUpdate({ alpha: v })} />
 
         <div className="mb-2">

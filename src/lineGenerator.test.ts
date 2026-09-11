@@ -317,7 +317,9 @@ describe('generateLayerLines', () => {
     // undisplaced travel line itself, whose y sits at exactly height/2 = 100
     // whenever displacement is 0):
     const diagonal = Math.sqrt(width * width + height * height);
-    const startX = width / 2 - diagonal;
+    // The generator spans `reach = 2 * diagonal` each side of the layer
+    // center along the travel axis (baseAngle 0, offset 0 -> centerX = width/2).
+    const startX = width / 2 - 2 * diagonal;
     const STEP_LENGTH = 4;
 
     // Only the center line (perpendicular offset 0) sits at y === 100
