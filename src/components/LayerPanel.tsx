@@ -139,6 +139,13 @@ export function LayerPanel({
           >
             Strahlen
           </Button>
+          <Button
+            size="sm"
+            variant={layer.macroShape === 'rings' ? 'default' : 'outline'}
+            onClick={() => onUpdate({ macroShape: 'rings' })}
+          >
+            Ringe
+          </Button>
         </div>
         {(layer.macroShape === 'circle' || layer.macroShape === 'parabola' || layer.macroShape === 'smooth') && (
           <>
@@ -151,6 +158,7 @@ export function LayerPanel({
           <>
             <ParamSlider label="Magnet-Abstand" min={20} max={1000} step={10} value={layer.fieldPoleDistance} onChange={(v) => onUpdate({ fieldPoleDistance: v })} />
             <ParamSlider label="Feldstärke" min={0} max={1} step={0.01} value={layer.fieldStrength} onChange={(v) => onUpdate({ fieldStrength: v })} />
+            <ParamSlider label="Anzahl Linien" min={4} max={200} step={1} value={layer.fieldLineCount} onChange={(v) => onUpdate({ fieldLineCount: v })} />
           </>
         )}
         {layer.macroShape === 'radial' && (
@@ -159,6 +167,9 @@ export function LayerPanel({
             <ParamSlider label="Oval-Form" min={0.2} max={3} step={0.05} value={layer.radialOvality} onChange={(v) => onUpdate({ radialOvality: v })} />
             <ParamSlider label="Verzerrung" min={-2} max={2} step={0.05} value={layer.radialTwist} onChange={(v) => onUpdate({ radialTwist: v })} />
           </>
+        )}
+        {layer.macroShape === 'rings' && (
+          <ParamSlider label="Oval-Form" min={0.2} max={3} step={0.05} value={layer.radialOvality} onChange={(v) => onUpdate({ radialOvality: v })} />
         )}
         <ParamSlider label="Position X" min={-500} max={500} step={10} value={layer.offsetX} onChange={(v) => onUpdate({ offsetX: v })} />
         <ParamSlider label="Position Y" min={-500} max={500} step={10} value={layer.offsetY} onChange={(v) => onUpdate({ offsetY: v })} />

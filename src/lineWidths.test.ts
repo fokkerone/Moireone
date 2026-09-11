@@ -37,6 +37,7 @@ function makeLayer(overrides: Partial<LayerParams> = {}): LayerParams {
     widthImageStrength: 1,
     widthImageData: null,
     fieldPoleDistance: 200,
+    fieldLineCount: 24,
     fieldStrength: 0.6,
     radialOvality: 1,
     radialTwist: 0.5,

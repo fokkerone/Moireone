@@ -32,6 +32,7 @@ const straightLayer: LayerParams = {
   widthImageStrength: 1,
   widthImageData: null,
   fieldPoleDistance: 200,
+  fieldLineCount: 24,
   fieldStrength: 0.6,
   radialOvality: 1,
   radialTwist: 0.5,
@@ -107,6 +108,7 @@ describe('generateLayerLines', () => {
       widthImageStrength: 1,
       widthImageData: null,
       fieldPoleDistance: 200,
+      fieldLineCount: 24,
       fieldStrength: 0.6,
       radialOvality: 1,
       radialTwist: 0.5,
@@ -203,6 +205,7 @@ describe('generateLayerLines', () => {
       widthImageStrength: 1,
       widthImageData: null,
       fieldPoleDistance: 200,
+      fieldLineCount: 24,
       fieldStrength: 0.6,
       radialOvality: 1,
       radialTwist: 0.5,
@@ -288,6 +291,7 @@ describe('generateLayerLines', () => {
       widthImageStrength: 1,
       widthImageData: null,
       fieldPoleDistance: 200,
+      fieldLineCount: 24,
       fieldStrength: 0.6,
       radialOvality: 1,
       radialTwist: 0.5,
@@ -388,6 +392,7 @@ describe('generateLayerLines', () => {
       widthImageStrength: 1,
       widthImageData: null,
       fieldPoleDistance: 200,
+      fieldLineCount: 24,
       fieldStrength: 0.6,
       radialOvality: 1,
       radialTwist: 0.5,
@@ -476,6 +481,7 @@ describe('generateLayerLines', () => {
       widthImageStrength: 1,
       widthImageData: null,
       fieldPoleDistance: 200,
+      fieldLineCount: 24,
       fieldStrength: 0.6,
       radialOvality: 1,
       radialTwist: 0.5,
@@ -527,6 +533,7 @@ describe('generateLayerLines - fieldLines macro shape', () => {
     ...straightLayer,
     macroShape: 'fieldLines',
     fieldPoleDistance: 200,
+    fieldLineCount: 24,
     fieldStrength: 0.6,
   };
 
@@ -546,10 +553,10 @@ describe('generateLayerLines - fieldLines macro shape', () => {
     }
   });
 
-  it('produces more lines when spacing is smaller (denser start-circle sampling)', () => {
-    const wide = generateLayerLines({ ...fieldLayer, spacing: 40 }, 400, 400, neutralNoise);
-    const tight = generateLayerLines({ ...fieldLayer, spacing: 5 }, 400, 400, neutralNoise);
-    expect(tight.length).toBeGreaterThan(wide.length);
+  it('produces more lines when fieldLineCount is higher', () => {
+    const few = generateLayerLines({ ...fieldLayer, fieldLineCount: 4 }, 400, 400, neutralNoise);
+    const many = generateLayerLines({ ...fieldLayer, fieldLineCount: 40 }, 400, 400, neutralNoise);
+    expect(many.length).toBeGreaterThan(few.length);
   });
 
   it('fieldStrength = 0 traces straight rays away from the + pole', () => {
@@ -656,5 +663,68 @@ describe('generateLayerLines - radial macro shape', () => {
     const last = longest[longest.length - 1];
     const cross = (last.x - p0.x) * dy - (last.y - p0.y) * dx;
     expect(Math.abs(cross)).toBeGreaterThan(1e-3 * Math.max(1, Math.hypot(dx, dy)));
+  });
+});
+
+describe('generateLayerLines - rings macro shape', () => {
+  const ringsLayer: LayerParams = {
+    ...straightLayer,
+    macroShape: 'rings',
+    spacing: 40,
+    radialOvality: 1,
+  };
+
+  it('produces at least one line, entirely finite and within canvas bounds', () => {
+    const lines = generateLayerLines(ringsLayer, 400, 400, neutralNoise);
+    expect(lines.length).toBeGreaterThan(0);
+    for (const line of lines) {
+      expect(line.length).toBeGreaterThan(1);
+      for (const p of line) {
+        expect(Number.isFinite(p.x)).toBe(true);
+        expect(Number.isFinite(p.y)).toBe(true);
+        expect(p.x).toBeGreaterThanOrEqual(-0.001);
+        expect(p.x).toBeLessThanOrEqual(400.001);
+        expect(p.y).toBeGreaterThanOrEqual(-0.001);
+        expect(p.y).toBeLessThanOrEqual(400.001);
+      }
+    }
+  });
+
+  it('every point of every ring sits at a consistent distance from the center (a real circle, not a taper)', () => {
+    // Large canvas + only the center portion, so full untruncated rings
+    // are present and easy to reason about.
+    const lines = generateLayerLines({ ...ringsLayer, spacing: 100 }, 1000, 1000, neutralNoise);
+    const centerX = 500;
+    const centerY = 500;
+
+    // Pick a ring that's fully inside the canvas (a single closed segment
+    // whose points don't touch the canvas edge).
+    const fullRing = lines.find((line) =>
+      line.length > 20 && line.every((p) => p.x > 10 && p.x < 990 && p.y > 10 && p.y < 990)
+    );
+    expect(fullRing).toBeDefined();
+
+    const radii = fullRing!.map((p) => Math.hypot(p.x - centerX, p.y - centerY));
+    const minR = Math.min(...radii);
+    const maxR = Math.max(...radii);
+    // All points on one ring should be at (nearly) the same radius.
+    expect(maxR - minR).toBeLessThan(1);
+  });
+
+  it('produces more rings when spacing is smaller (denser radius steps)', () => {
+    const wide = generateLayerLines({ ...ringsLayer, spacing: 200 }, 1000, 1000, neutralNoise);
+    const tight = generateLayerLines({ ...ringsLayer, spacing: 20 }, 1000, 1000, neutralNoise);
+    expect(tight.length).toBeGreaterThan(wide.length);
+  });
+
+  it('shifts the whole pattern when offsetX/offsetY (the center) changes', () => {
+    const base = generateLayerLines(ringsLayer, 400, 400, neutralNoise);
+    const moved = generateLayerLines({ ...ringsLayer, offsetX: 60, offsetY: -40 }, 400, 400, neutralNoise);
+    expect(base.length).toBeGreaterThan(0);
+    expect(moved.length).toBeGreaterThan(0);
+    const baseFirst = base[0][0];
+    const movedFirst = moved[0][0];
+    const sameStart = Math.abs(baseFirst.x - movedFirst.x) < 1e-6 && Math.abs(baseFirst.y - movedFirst.y) < 1e-6;
+    expect(sameStart).toBe(false);
   });
 });
